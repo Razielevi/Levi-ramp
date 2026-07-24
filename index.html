@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>לוי רמפה - שלט בלוטוס</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            direction: rtl;
+        }
+        .card {
+            background-color: #1e1e1e;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 420px;
+            margin: auto;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+            border: 1px solid #2a2a2a;
+        }
+        h1 { 
+            font-size: 26px; 
+            color: #00e676; 
+            margin-top: 0;
+            margin-bottom: 6px; 
+        }
+        p { 
+            font-size: 14px; 
+            color: #aaa; 
+            margin-top: 0; 
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #333;
+            margin: 18px 0;
+        }
+        
+        input {
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #444;
+            background-color: #2a2a2a;
+            color: #fff;
+            font-size: 20px;
+            text-align: center;
+            outline: none;
+        }
+        input:focus {
+            border-color: #00e676;
+        }
+        
+        button, .btn-link {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.15s ease, transform 0.1s ease;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            text-decoration: none;
+            box-sizing: border-box;
+        }
+        button:active, .btn-link:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-primary { 
+            background-color: #29b6f6; 
+            color: #000; 
+        }
+        .btn-primary:active { 
+            background-color: #0288d1; 
+        }
+
+        .btn-action { 
+            background-color: #00e676; 
+            color: #000; 
+            font-size: 20px;
+            padding: 20px;
+        }
+        .btn-action:active { 
+            background-color: #00a850; 
+        }
+
+        .btn-secondary { 
+            background-color: #424242; 
+            color: #fff; 
+        }
+        .btn-secondary:active { 
+            background-color: #212121; 
+        }
+
+        .btn-whatsapp {
+            background-color: #25d366;
+            color: #ffffff;
+            font-size: 16px;
+        }
+        .btn-whatsapp:active {
+            background-color: #1ebc57;
+        }
+        
+        .hidden { 
+            display: none !important; 
+        }
+
+        #status { 
+            margin-top: 12px; 
+            font-weight: bold; 
+            font-size: 16px;
+            color: #ffca28; 
+            padding: 8px;
+            background-color: #262626;
+            border-radius: 6px;
+        }
+
+        .error-msg {
+            color: #ff5252;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>לוי רמפה</h1>
+    <p>מערכת שליטה בלוטוס</p>
+    <hr>
+
+    <!-- מסך 1: הזנת קוד גישה -->
+    <div id="loginSection">
+        <h3>הזן קוד גישה</h3>
+        <p id="passHint">קוד ראשוני לברירת מחדל: 1234</p>
+        <input type="password" id="pinInput" placeholder="****" maxlength="8" inputmode="numeric">
+        <button class="btn-primary" onclick="checkPin()">כנס לשלט</button>
+        <div id="loginError" class="error-msg"></div>
+    </div>
+
+    <!-- מסך 2: שליטה ברמפה (מוצג לאחר הזנת סיסמה נכונה) -->
+    <div id="controlSection" class="hidden">
+        <button class="btn-primary" onclick="connectBluetooth()">🔌 התחבר לבלוטוס</button>
+        <div id="status">מנותק</div>
+        
+        <hr>
+        
+        <!-- כפתורי תפעול הרמפה (מומנטריים: לחיצה מפעילה, עזיבה מפסיקה) -->
+        <button class="btn-action" 
+                ontouchstart="handlePress(event, 1)" ontouchend="handlePress(event, 0)"
+                onmousedown="handlePress(event, 1)" onmouseup="handlePress(event, 0)">⬆️ הרם רמפה</button>
+                
+        <button class="btn-action" 
+                ontouchstart="handlePress(event, 2)" ontouchend="handlePress(event, 0)"
+                onmousedown="handlePress(event, 2)" onmouseup="handlePress(event, 0)">⬇️ הורד רמפה</button>
+        
+        <hr style="margin-top: 24px;">
+        
+        <!-- הגדרת סיסמה אישית -->
+        <h4>שינוי סיסמה אישית</h4>
+        <input type="password" id="newPinInput" placeholder="סיסמה חדשה (4 ספרות)" maxlength="8" inputmode="numeric">
+        <button class="btn-secondary" onclick="changePin()">עדכן סיסמה אישית</button>
+        
+        <hr style="margin-top: 20px;">
+        
+        <!-- כפתור תמיכה ב-WhatsApp -->
+        <a href="https://wa.me/" target="_blank" class="btn-link btn-whatsapp">💬 תמיכה ב-WhatsApp</a>
+    </div>
+</div>
+
+<script>
+    // קוד גישה ברירת מחדל
+    const DEFAULT_PIN = "1234";
+    let savedPin = DEFAULT_PIN;
+
+    // טעינת הסיסמה מזיכרון המכשיר במידה וקיימת
+    try {
+        savedPin = localStorage.getItem("user_pin") || DEFAULT_PIN;
+    } catch (e) {
+        console.warn("localStorage אינו נגיש בדפדפן זה", e);
+    }
+
+    // בדיקת קוד גישה
+    function checkPin() {
+        const input = document.getElementById("pinInput").value;
+        const errorDiv = document.getElementById("loginError");
+        
+        if (input === savedPin) {
+            document.getElementById("loginSection").classList.add("hidden");
+            document.getElementById("controlSection").classList.remove("hidden");
+            errorDiv.innerText = "";
+        } else {
+            errorDiv.innerText = "קוד שגוי, נסה שוב";
+        }
+    }
+
+    // עדכון קוד גישה
+    function changePin() {
+        const newPin = document.getElementById("newPinInput").value;
+        if (newPin.length >= 4) {
+            try {
+                localStorage.setItem("user_pin", newPin);
+            } catch(e) {
+                console.warn("לא ניתן לשמור את הסיסמה", e);
+            }
+            savedPin = newPin;
+            alert("הסיסמה האישית עודכנה בהצלחה!");
+            document.getElementById("newPinInput").value = "";
+        } else {
+            alert("הסיסמה חייבת להכיל לפחות 4 ספרות");
+        }
+    }
+
+    // משתני Bluetooth
+    let bluetoothDevice;
+    let gattServer;
+    let relayService;
+    let relayCharacteristic;
+
+    // התחברות לרכיב ה-Bluetooth
+    async function connectBluetooth() {
+        const statusDiv = document.getElementById("status");
+        
+        if (!navigator.bluetooth) {
+            statusDiv.innerText = "🔴 הדפדפן אינו תומך ב-Bluetooth";
+            statusDiv.style.color = "#ff5252";
+            alert("נא לפתוח את הקישור בדפדפן Chrome במכשיר אנדרואיד או מחשב.");
+            return;
+        }
+
+        try {
+            statusDiv.innerText = "מחפש התקן BLE...";
+            statusDiv.style.color = "#ffca28";
+            
+            bluetoothDevice = await navigator.bluetooth.requestDevice({
+                acceptAllDevices: true,
+                optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb']
+            });
+
+            statusDiv.innerText = "מתחבר...";
+            gattServer = await bluetoothDevice.gatt.connect();
+            
+            relayService = await gattServer.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
+            relayCharacteristic = await relayService.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
+
+            statusDiv.innerText = "🟢 מחובר בהצלחה!";
+            statusDiv.style.color = "#00e676";
+        } catch (error) {
+            console.error(error);
+            statusDiv.innerText = "🔴 שגיאה בחיבור";
+            statusDiv.style.color = "#ff5252";
+        }
+    }
+
+    // טיפול בבלעדיות של אירועי מגע/עכבר
+    function handlePress(event, command) {
+        if (event.type === 'touchstart') {
+            event.preventDefault();
+        }
+        sendRelay(command);
+    }
+
+    // שליחת פקודה לרכיב הממסר
+    async function sendRelay(command) {
+        if (!relayCharacteristic) return;
+        try {
+            let data = new Uint8Array([command]);
+            await relayCharacteristic.writeValue(data);
+        } catch (e) {
+            console.log("שגיאה בשליחת פקודה:", e);
+        }
+    }
+</script>
+
+</body>
+</html>
