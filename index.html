@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Levi Ramp - Bluetooth Remote</title>
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
         body {
             font-family: Arial, sans-serif;
             background-color: #0f172a;
@@ -27,7 +25,6 @@
             border: 1px solid #334155;
             overflow: hidden;
         }
-        
         .truck-header {
             width: 100%;
             height: 150px;
@@ -36,7 +33,6 @@
             border: 2px solid #00e676;
             margin-bottom: 12px;
         }
-
         h1 { font-size: 26px; color: #00e676; margin: 4px 0; }
         p { font-size: 14px; color: #94a3b8; margin-top: 0; }
         hr { border: none; border-top: 1px solid #334155; margin: 16px 0; }
@@ -188,8 +184,9 @@
 
             <label id="t-modeLabel">Transmission Protocol (Module Mode):</label>
             <select id="modeSelect" onchange="saveSettings()">
-                <option value="HEX">HEX Mode (Bytes - Module X)</option>
-                <option value="ASCII">ASCII Mode (Text String)</option>
+                <option value="RELAY_A0">Chinese 8-Relay Protocol (0xA0)</option>
+                <option value="HEX">Simple HEX Mode</option>
+                <option value="ASCII">ASCII Mode</option>
             </select>
 
             <label id="t-relay5Label">Master Relay #5 Dual Trigger:</label>
@@ -214,7 +211,7 @@
             </div>
 
             <div class="grid-center">
-                <span>LEVI<br>RAMP<br><b id="modeDisplay">HEX</b></span>
+                <span>LEVI<br>RAMP<br><b id="modeDisplay">A0</b></span>
             </div>
 
             <div class="grid-right">
@@ -246,11 +243,11 @@
 <script>
     const DEFAULT_PIN = "1234";
     let savedPin = DEFAULT_PIN;
-    let workMode = "HEX";
+    let workMode = "RELAY_A0";
     let useRelay5 = true;
-    let currentLang = "en";
+    let currentLang = "he";
+    let activeChannel = 0;
 
-    // Multi-Language Dictionary
     const translations = {
         en: {
             dir: "ltr",
@@ -317,260 +314,27 @@
             wrongPin: "קוד שגוי, נסה שוב",
             pinSuccess: "הסיסמה עודכנה בהצלחה!",
             pinMin: "הסיסמה חייבת להכיל לפחות 4 ספרות"
-        },
-        ar: {
-            dir: "rtl",
-            subtitle: "جهاز تحكم بلوتوث لمنصة هيدروليكية",
-            loginTitle: "أدخل رمز المرور",
-            passHint: "رمز المرور الافتراضي: 1234",
-            loginBtn: "🔑 الدخول إلى الريموت",
-            connectBt: "📶 الاتصال بالبلوتوث BLE",
-            btDisconnected: "البلوتوث غير متصل",
-            btSearching: "جاري البحث عن جهاز BLE...",
-            btConnecting: "جاري الاتصال...",
-            btConnected: "تم الاتصال بنجاح!",
-            btError: "خطأ في الاتصال",
-            settingsBtn: "⚙️ الإعدادات واللغة",
-            settingsTitle: "إعدادات وحدة التحكم والنظام",
-            langLabel: "اللغة / Language:",
-            modeLabel: "بروتوكول الإرسال:",
-            relay5Label: "تشغيل المرحل الرئيسي #5:",
-            r5Yes: "نعم - تشغيل المرحل 5 مع كل حركة",
-            r5No: "لا - تشغيل مرحل واحد فقط",
-            closeSettings: "إغلاق الإعدادات",
-            btnUp: "رفع",
-            btnDown: "خفض",
-            btnLeft: "فتح",
-            btnRight: "إغلاق",
-            changePinTitle: "تغيير رمز المرور",
-            updatePinBtn: "تحديث رمز المرور",
-            supportTitle: "للطلب والدعم الفني",
-            callBtn: "📞 اتصل الآن",
-            waBtn: "💬 تواصل عبر واتساب",
-            wrongPin: "رمز المرور خاطئ، حاول مرة أخرى",
-            pinSuccess: "تم تحديث رمز المرور بنجاح!",
-            pinMin: "يجب أن يتكون الرمز من 4 أرقام على الأقل"
-        },
-        es: {
-            dir: "ltr",
-            subtitle: "Control Remoto Bluetooth para Rampa Hidráulica",
-            loginTitle: "Ingrese Código de Acceso",
-            passHint: "Código Predeterminado: 1234",
-            loginBtn: "🔑 Entrar al Control",
-            connectBt: "📶 Conectar Bluetooth BLE",
-            btDisconnected: "Bluetooth Desconectado",
-            btSearching: "Buscando Dispositivo BLE...",
-            btConnecting: "Conectando...",
-            btConnected: "¡Conectado Con Éxito!",
-            btError: "Error de Conexión",
-            settingsBtn: "⚙️ Ajustes e Idioma",
-            settingsTitle: "Configuración del Módulo",
-            langLabel: "Idioma / Language:",
-            modeLabel: "Protocolo de Transmisión:",
-            relay5Label: "Relé Maestro #5 Conjunto:",
-            r5Yes: "SÍ - Activar Relé #5 en cada acción",
-            r5No: "NO - Modo Relé Individual",
-            closeSettings: "Cerrar Ajustes",
-            btnUp: "SUBIR",
-            btnDown: "BAJAR",
-            btnLeft: "ABRIR",
-            btnRight: "CERRAR",
-            changePinTitle: "Cambiar Código",
-            updatePinBtn: "Actualizar Código",
-            supportTitle: "Pedidos y Soporte Técnico",
-            callBtn: "📞 Llamar Ahora",
-            waBtn: "💬 Contactar por WhatsApp",
-            wrongPin: "Código incorrecto, intente de nuevo",
-            pinSuccess: "¡Código actualizado con éxito!",
-            pinMin: "El código debe tener al menos 4 dígitos"
-        },
-        ru: {
-            dir: "ltr",
-            subtitle: "Bluetooth Пульт Управления Гидробортом",
-            loginTitle: "Введите ПИН-код",
-            passHint: "Код по умолчанию: 1234",
-            loginBtn: "🔑 Войти в Пульт",
-            connectBt: "📶 Подключить Bluetooth BLE",
-            btDisconnected: "Bluetooth Отключен",
-            btSearching: "Поиск устройства BLE...",
-            btConnecting: "Подключение...",
-            btConnected: "Успешно Подключено!",
-            btError: "Ошибка Подключения",
-            settingsBtn: "⚙️ Настройки и Язык",
-            settingsTitle: "Настройки Модуля и Системы",
-            langLabel: "Язык / Language:",
-            modeLabel: "Протокол Передачи:",
-            relay5Label: "Мастер-Реле #5 Совместно:",
-            r5Yes: "ДА - Включать Реле #5 с каждым действием",
-            r5No: "НЕТ - Режим одиночного реле",
-            closeSettings: "Закрыть Настройки",
-            btnUp: "ВВЕРХ",
-            btnDown: "ВНИЗ",
-            btnLeft: "ОТКРЫТЬ",
-            btnRight: "ЗАКРЫТЬ",
-            changePinTitle: "Изменить ПИН-код",
-            updatePinBtn: "Обновить ПИН-код",
-            supportTitle: "Заказ и Техподдержка",
-            callBtn: "📞 Позвонить Сейчас",
-            waBtn: "💬 Написать в WhatsApp",
-            wrongPin: "Неверный ПИН-код, попробуйте еще раз",
-            pinSuccess: "ПИН-код успешно обновлен!",
-            pinMin: "ПИН-код должен содержать минимум 4 цифры"
-        },
-        fr: {
-            dir: "ltr",
-            subtitle: "Télécommande Bluetooth pour Hayon Élévateur",
-            loginTitle: "Entrez le Code d'Accès",
-            passHint: "Code par défaut : 1234",
-            loginBtn: "🔑 Accéder à la Télécommande",
-            connectBt: "📶 Connecter Bluetooth BLE",
-            btDisconnected: "Bluetooth Déconnecté",
-            btSearching: "Recherche d'appareil BLE...",
-            btConnecting: "Connexion en cours...",
-            btConnected: "Connecté avec Succès !",
-            btError: "Erreur de Connexion",
-            settingsBtn: "⚙️ Paramètres et Langue",
-            settingsTitle: "Configuration du Module",
-            langLabel: "Langue / Language :",
-            modeLabel: "Protocole de Transmission :",
-            relay5Label: "Relais Maître #5 Simultané :",
-            r5Yes: "OUI - Activer le Relais #5 à chaque action",
-            r5No: "NON - Mode Relais Unique",
-            closeSettings: "Fermer les Paramètres",
-            btnUp: "MONTER",
-            btnDown: "DESCENDRE",
-            btnLeft: "OUVRIR",
-            btnRight: "FERMER",
-            changePinTitle: "Changer le Code PIN",
-            updatePinBtn: "Mettre à jour le Code",
-            supportTitle: "Commande & Support Technique",
-            callBtn: "📞 Appeler Maintenant",
-            waBtn: "💬 Contacter sur WhatsApp",
-            wrongPin: "Code incorrect, réessayez",
-            pinSuccess: "Code PIN mis à jour avec succès !",
-            pinMin: "Le code PIN doit contenir au moins 4 chiffres"
-        },
-        de: {
-            dir: "ltr",
-            subtitle: "Bluetooth-Fernbedienung für Ladebordwand",
-            loginTitle: "Zugangscode Eingeben",
-            passHint: "Standardcode: 1234",
-            loginBtn: "🔑 Fernbedienung Öffnen",
-            connectBt: "📶 Bluetooth BLE Verbinden",
-            btDisconnected: "Bluetooth Getrennt",
-            btSearching: "Suche nach BLE-Gerät...",
-            btConnecting: "Verbindung wird hergestellt...",
-            btConnected: "Erfolgreich Verbunden!",
-            btError: "Verbindungsfehler",
-            settingsBtn: "⚙️ Einstellungen & Sprache",
-            settingsTitle: "Modul- und Systemeinstellungen",
-            langLabel: "Sprache / Language:",
-            modeLabel: "Übertragungsprotokoll:",
-            relay5Label: "Hauptrelais #5 Parallelschaltung:",
-            r5Yes: "JA - Relais #5 bei jeder Aktion auslösen",
-            r5No: "NEIN - Einzelrelais-Modus",
-            closeSettings: "Einstellungen Schließen",
-            btnUp: "HEBEN",
-            btnDown: "SENKEN",
-            btnLeft: "ÖFFNEN",
-            btnRight: "SCHLIESSEN",
-            changePinTitle: "Zugangscode Ändern",
-            updatePinBtn: "Code Aktualisieren",
-            supportTitle: "Bestellung & Technischer Support",
-            callBtn: "📞 Jetzt Anrufen",
-            waBtn: "💬 WhatsApp-Kontakt",
-            wrongPin: "Falscher Code, versuchen Sie es erneut",
-            pinSuccess: "Code erfolgreich aktualisiert!",
-            pinMin: "Der Code muss mindestens 4-stellig sein"
-        },
-        zh: {
-            dir: "ltr",
-            subtitle: "液压升降尾板蓝牙远程控制器",
-            loginTitle: "输入密码",
-            passHint: "默认密码：1234",
-            loginBtn: "🔑 进入遥控器",
-            connectBt: "📶 连接 BLE 蓝牙",
-            btDisconnected: "蓝牙未连接",
-            btSearching: "正在搜索 BLE 设备...",
-            btConnecting: "正在连接...",
-            btConnected: "连接成功！",
-            btError: "连接错误",
-            settingsBtn: "⚙️ 设置与语言",
-            settingsTitle: "模块与系统设置",
-            langLabel: "语言 / Language:",
-            modeLabel: "传输协议（模块模式）：",
-            relay5Label: "主继电器 #5 联动：",
-            r5Yes: "是 - 每次操作同时触发继电器 #5",
-            r5No: "否 - 单一继电器模式",
-            closeSettings: "关闭设置",
-            btnUp: "上升",
-            btnDown: "下降",
-            btnLeft: "展开",
-            btnRight: "折叠",
-            changePinTitle: "修改密码",
-            updatePinBtn: "更新密码",
-            supportTitle: "订购与技术支持",
-            callBtn: "📞 立即拨打电话",
-            waBtn: "💬 通过 WhatsApp 联系",
-            wrongPin: "密码错误，请重试",
-            pinSuccess: "密码更新成功！",
-            pinMin: "密码必须至少包含 4 位数字"
-        },
-        tr: {
-            dir: "ltr",
-            subtitle: "Hidrolik Kapak Bluetooth Uzaktan Kumanda",
-            loginTitle: "Erişim Kodunu Girin",
-            passHint: "Varsayılan Kod: 1234",
-            loginBtn: "🔑 Kumandaya Giriş",
-            connectBt: "📶 Bluetooth BLE Bağlan",
-            btDisconnected: "Bluetooth Bağlantısı Kesildi",
-            btSearching: "BLE Cihazı Aranıyor...",
-            btConnecting: "Bağlanıyor...",
-            btConnected: "Başarıyla Bağlandı!",
-            btError: "Bağlantı Hatası",
-            settingsBtn: "⚙️ Ayarlar ve Dil",
-            settingsTitle: "Modül ve Sistem Ayarları",
-            langLabel: "Dil / Language:",
-            modeLabel: "İletim Protokolü:",
-            relay5Label: "Ana Röle #5 Ortak Çalışma:",
-            r5Yes: "EVET - Her işlemde Röle #5'i tetikle",
-            r5No: "HAYIR - Tekli Röle Modu",
-            closeSettings: "Ayarları Kapat",
-            btnUp: "YUKARI",
-            btnDown: "AŞAĞI",
-            btnLeft: "AÇ",
-            btnRight: "KAPAT",
-            changePinTitle: "Kodu Değiştir",
-            updatePinBtn: "Kodu Güncelle",
-            supportTitle: "Sipariş ve Teknik Destek",
-            callBtn: "📞 Şimdi Ara",
-            waBtn: "💬 WhatsApp'tan Ulaşın",
-            wrongPin: "Hatalı kod, tekrar deneyin",
-            pinSuccess: "Kod başarıyla güncellendi!",
-            pinMin: "Kod en az 4 haneli olmalıdır"
         }
     };
 
-    // Load saved configurations
     try {
         savedPin = localStorage.getItem("user_pin") || DEFAULT_PIN;
-        workMode = localStorage.getItem("work_mode") || "HEX";
+        workMode = localStorage.getItem("work_mode") || "RELAY_A0";
         useRelay5 = localStorage.getItem("use_relay5") !== "false";
-        currentLang = localStorage.getItem("app_lang") || "en";
+        currentLang = localStorage.getItem("app_lang") || "he";
     } catch (e) {}
 
     document.getElementById("modeSelect").value = workMode;
     document.getElementById("relay5Select").value = useRelay5 ? "true" : "false";
     document.getElementById("langSelect").value = currentLang;
-    document.getElementById("modeDisplay").innerText = workMode;
+    document.getElementById("modeDisplay").innerText = workMode === "RELAY_A0" ? "A0" : workMode;
 
     function changeLanguage(lang) {
-        if (!translations[lang]) lang = "en";
+        if (!translations[lang]) lang = "he";
         currentLang = lang;
         const t = translations[lang];
 
         document.body.dir = t.dir;
-        
         document.getElementById("t-subtitle").innerText = t.subtitle;
         document.getElementById("t-loginTitle").innerText = t.loginTitle;
         document.getElementById("t-passHint").innerText = t.passHint;
@@ -611,7 +375,7 @@
     function saveSettings() {
         workMode = document.getElementById("modeSelect").value;
         useRelay5 = document.getElementById("relay5Select").value === "true";
-        document.getElementById("modeDisplay").innerText = workMode;
+        document.getElementById("modeDisplay").innerText = workMode === "RELAY_A0" ? "A0" : workMode;
         
         try {
             localStorage.setItem("work_mode", workMode);
@@ -622,7 +386,7 @@
     function checkPin() {
         const input = document.getElementById("pinInput").value;
         const errorDiv = document.getElementById("loginError");
-        const t = translations[currentLang];
+        const t = translations[currentLang] || translations["he"];
 
         if (input === savedPin) {
             document.getElementById("loginSection").classList.add("hidden");
@@ -636,7 +400,7 @@
 
     function changePin() {
         const newPin = document.getElementById("newPinInput").value;
-        const t = translations[currentLang];
+        const t = translations[currentLang] || translations["he"];
 
         if (newPin.length >= 4) {
             try { localStorage.setItem("user_pin", newPin); } catch(e) {}
@@ -654,7 +418,7 @@
     async function connectBluetooth() {
         const statusText = document.getElementById("statusText");
         const btIcon = document.getElementById("btIcon");
-        const t = translations[currentLang];
+        const t = translations[currentLang] || translations["he"];
         
         if (!navigator.bluetooth) {
             alert("Please open this app in Google Chrome on Android or Desktop.");
@@ -667,13 +431,28 @@
             
             bluetoothDevice = await navigator.bluetooth.requestDevice({
                 acceptAllDevices: true,
-                optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb']
+                optionalServices: [
+                    '0000ffe0-0000-1000-8000-00805f9b34fb',
+                    '00001000-0000-1000-8000-00805f9b34fb'
+                ]
             });
 
             statusText.innerText = t.btConnecting;
             const gattServer = await bluetoothDevice.gatt.connect();
-            const relayService = await gattServer.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
-            relayCharacteristic = await relayService.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
+            
+            // חיפוש סרוויס מתאים
+            let relayService;
+            try {
+                relayService = await gattServer.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
+            } catch (e) {
+                relayService = await gattServer.getPrimaryService('00001000-0000-1000-8000-00805f9b34fb');
+            }
+
+            try {
+                relayCharacteristic = await relayService.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
+            } catch (e) {
+                relayCharacteristic = await relayService.getCharacteristic('00001001-0000-1000-8000-00805f9b34fb');
+            }
 
             statusText.innerText = t.btConnected;
             statusText.style.color = "#00e676";
@@ -693,43 +472,71 @@
         }
     }
 
-    async function sendCommand(code) {
+    // פונקציית שליחת הפקודות המותאמת לכרטיס הסיני שבתמונה (פרוטוקול A0)
+    async function sendSingleRelay(channel, state) {
         if (!relayCharacteristic) return;
 
+        let payload;
+        if (workMode === "RELAY_A0") {
+            // פורמט 4 בייטים: [0xA0, Channel, State, Checksum]
+            const ch = channel & 0xFF;
+            const st = state & 0xFF;
+            const checksum = (0xA0 + ch + st) & 0xFF;
+            payload = new Uint8Array([0xA0, ch, st, checksum]);
+        } else if (workMode === "HEX") {
+            payload = state === 1 ? new Uint8Array([channel]) : new Uint8Array([0x00]);
+        } else {
+            const encoder = new TextEncoder();
+            payload = encoder.encode(state === 1 ? channel.toString() : "0");
+        }
+
         try {
-            let data;
-            if (workMode === "HEX") {
-                if (code === 0) {
-                    data = new Uint8Array([0x00]);
-                } else {
-                    data = useRelay5 ? new Uint8Array([0x05, code]) : new Uint8Array([code]);
-                }
-            } else {
-                const encoder = new TextEncoder();
-                let str = code.toString();
-                if (code !== 0 && useRelay5) str = "5" + str;
-                data = encoder.encode(str);
+            await relayCharacteristic.writeValue(payload);
+        } catch (e1) {
+            try {
+                await relayCharacteristic.writeValueWithoutResponse(payload);
+            } catch (e2) {
+                console.log("Transmission Error:", e2);
             }
-            await relayCharacteristic.writeValue(data);
-        } catch (e) {
-            console.log("Transmission Error:", e);
         }
     }
 
-    function bindMomentary(btnId, code) {
+    async function sendCommand(channel, state) {
+        if (state === 1) {
+            activeChannel = channel;
+            // אם מוגדר להפעיל גם את ממסר 5 (מאסטר)
+            if (useRelay5 && channel !== 5) {
+                await sendSingleRelay(5, 1);
+                await new Promise(r => setTimeout(r, 40)); // השהייה קלה בין פקודות
+            }
+            await sendSingleRelay(channel, 1);
+        } else {
+            // כיבוי
+            if (activeChannel !== 0) {
+                await sendSingleRelay(activeChannel, 0);
+                if (useRelay5 && activeChannel !== 5) {
+                    await new Promise(r => setTimeout(r, 40));
+                    await sendSingleRelay(5, 0);
+                }
+                activeChannel = 0;
+            }
+        }
+    }
+
+    function bindMomentary(btnId, channelCode) {
         const btn = document.getElementById(btnId);
         if (!btn) return;
 
         const start = (e) => {
             e.preventDefault();
             btn.classList.add("active");
-            sendCommand(code);
+            sendCommand(channelCode, 1);
         };
 
         const stop = (e) => {
             e.preventDefault();
             btn.classList.remove("active");
-            sendCommand(0);
+            sendCommand(channelCode, 0);
         };
 
         btn.addEventListener("touchstart", start, { passive: false });
@@ -748,10 +555,8 @@
         bindMomentary("btnRight", 4);
     }
 
-    // Initialize Language on Startup
     changeLanguage(currentLang);
 </script>
 
 </body>
 </html>
-
