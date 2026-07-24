@@ -184,9 +184,9 @@
 
             <label id="t-modeLabel">Transmission Protocol (Module Mode):</label>
             <select id="modeSelect" onchange="saveSettings()">
+                <option value="TEXT_NL">Text with NewLine (e.g. "1\r\n")</option>
                 <option value="RELAY_A0">Chinese 8-Relay Protocol (0xA0)</option>
-                <option value="HEX">Simple HEX Mode</option>
-                <option value="ASCII">ASCII Mode</option>
+                <option value="HEX">Simple HEX Bytes</option>
             </select>
 
             <label id="t-relay5Label">Master Relay #5 Dual Trigger:</label>
@@ -211,7 +211,7 @@
             </div>
 
             <div class="grid-center">
-                <span>LEVI<br>RAMP<br><b id="modeDisplay">A0</b></span>
+                <span>LEVI<br>RAMP<br><b id="modeDisplay">NL</b></span>
             </div>
 
             <div class="grid-right">
@@ -243,7 +243,7 @@
 <script>
     const DEFAULT_PIN = "1234";
     let savedPin = DEFAULT_PIN;
-    let workMode = "RELAY_A0";
+    let workMode = "TEXT_NL";
     let useRelay5 = true;
     let currentLang = "he";
     let activeChannel = 0;
@@ -319,7 +319,7 @@
 
     try {
         savedPin = localStorage.getItem("user_pin") || DEFAULT_PIN;
-        workMode = localStorage.getItem("work_mode") || "RELAY_A0";
+        workMode = localStorage.getItem("work_mode") || "TEXT_NL";
         useRelay5 = localStorage.getItem("use_relay5") !== "false";
         currentLang = localStorage.getItem("app_lang") || "he";
     } catch (e) {}
@@ -327,7 +327,7 @@
     document.getElementById("modeSelect").value = workMode;
     document.getElementById("relay5Select").value = useRelay5 ? "true" : "false";
     document.getElementById("langSelect").value = currentLang;
-    document.getElementById("modeDisplay").innerText = workMode === "RELAY_A0" ? "A0" : workMode;
+    document.getElementById("modeDisplay").innerText = workMode === "TEXT_NL" ? "NL" : (workMode === "RELAY_A0" ? "A0" : "HEX");
 
     function changeLanguage(lang) {
         if (!translations[lang]) lang = "he";
@@ -375,7 +375,7 @@
     function saveSettings() {
         workMode = document.getElementById("modeSelect").value;
         useRelay5 = document.getElementById("relay5Select").value === "true";
-        document.getElementById("modeDisplay").innerText = workMode === "RELAY_A0" ? "A0" : workMode;
+        document.getElementById("modeDisplay").innerText = workMode === "TEXT_NL" ? "NL" : (workMode === "RELAY_A0" ? "A0" : "HEX");
         
         try {
             localStorage.setItem("work_mode", workMode);
@@ -440,12 +440,11 @@
             statusText.innerText = t.btConnecting;
             const gattServer = await bluetoothDevice.gatt.connect();
             
-            // חיפוש סרוויס מתאים
             let relayService;
             try {
                 relayService = await gattServer.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
             } catch (e) {
-                relayService = await gattServer.getPrimaryService('00001000-0000-1000-8000-00805f9b34fb');
+                relayService = await gattServer.getInitialService ? await gattServer.getPrimaryService('00001000-0000-1000-8000-00805f9b34fb') : await gattServer.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
             }
 
             try {
@@ -472,54 +471,75 @@
         }
     }
 
-    // פונקציית שליחת הפקודות המותאמת לכרטיס הסיני שבתמונה (פרוטוקול A0)
-    async function sendSingleRelay(channel, state) {
+    async function sendDataPayload(payload) {
         if (!relayCharacteristic) return;
-
-        let payload;
-        if (workMode === "RELAY_A0") {
-            // פורמט 4 בייטים: [0xA0, Channel, State, Checksum]
-            const ch = channel & 0xFF;
-            const st = state & 0xFF;
-            const checksum = (0xA0 + ch + st) & 0xFF;
-            payload = new Uint8Array([0xA0, ch, st, checksum]);
-        } else if (workMode === "HEX") {
-            payload = state === 1 ? new Uint8Array([channel]) : new Uint8Array([0x00]);
-        } else {
-            const encoder = new TextEncoder();
-            payload = encoder.encode(state === 1 ? channel.toString() : "0");
-        }
-
         try {
             await relayCharacteristic.writeValue(payload);
         } catch (e1) {
             try {
                 await relayCharacteristic.writeValueWithoutResponse(payload);
             } catch (e2) {
-                console.log("Transmission Error:", e2);
+                console.log("BLE Write Error:", e2);
             }
         }
     }
 
     async function sendCommand(channel, state) {
-        if (state === 1) {
-            activeChannel = channel;
-            // אם מוגדר להפעיל גם את ממסר 5 (מאסטר)
-            if (useRelay5 && channel !== 5) {
-                await sendSingleRelay(5, 1);
-                await new Promise(r => setTimeout(r, 40)); // השהייה קלה בין פקודות
+        if (!relayCharacteristic) return;
+
+        let encoder = new TextEncoder();
+        
+        if (workMode === "TEXT_NL") {
+            // מצב טקסט עם ירידת שורה (נפוץ מאוד בלוחות בלוטוס סיניים)
+            // לדוגמה: "1\r\n" להדלקה ו-"0\r\n" לכיבוי
+            let cmdStr = state === 1 ? channel.toString() + "\r\n" : "0\r\n";
+            if (state === 1 && useRelay5 && channel !== 5) {
+                // הדלקת מאסטר 5 ואז הערוץ
+                await sendDataPayload(encoder.encode("5\r\n"));
+                await new Promise(r => setTimeout(r, 30));
+                cmdStr = channel.toString() + "\r\n";
+            } else if (state === 0 && useRelay5 && activeChannel !== 0 && activeChannel !== 5) {
+                await sendDataPayload(encoder.encode("0\r\n"));
+                await new Promise(r => setTimeout(r, 30));
+                cmdStr = "0\r\n";
             }
-            await sendSingleRelay(channel, 1);
-        } else {
-            // כיבוי
-            if (activeChannel !== 0) {
-                await sendSingleRelay(activeChannel, 0);
-                if (useRelay5 && activeChannel !== 5) {
-                    await new Promise(r => setTimeout(r, 40));
-                    await sendSingleRelay(5, 0);
+            await sendDataPayload(encoder.encode(cmdStr));
+            if (state === 1) activeChannel = channel;
+            else activeChannel = 0;
+
+        } else if (workMode === "RELAY_A0") {
+            // פרוטוקול A0 בינארי
+            const ch = channel & 0xFF;
+            const st = state & 0xFF;
+            const checksum = (0xA0 + ch + st) & 0xFF;
+            let payload = new Uint8Array([0xA0, ch, st, checksum]);
+            
+            if (state === 1) {
+                if (useRelay5 && channel !== 5) {
+                    let p5 = new Uint8Array([0xA0, 0x05, 0x01, (0xA0 + 5 + 1) & 0xFF]);
+                    await sendDataPayload(p5);
+                    await new Promise(r => setTimeout(r, 30));
                 }
-                activeChannel = 0;
+                activeChannel = channel;
+            } else {
+                if (activeChannel !== 0) {
+                    let pOff = new Uint8Array([0xA0, activeChannel, 0x00, (0xA0 + activeChannel + 0) & 0xFF]);
+                    await sendDataPayload(pOff);
+                    if (useRelay5 && activeChannel !== 5) {
+                        await new Promise(r => setTimeout(r, 30));
+                        let p5Off = new Uint8Array([0xA0, 0x05, 0x00, (0xA0 + 5 + 0) & 0xFF]);
+                        await sendDataPayload(p5Off);
+                    }
+                    activeChannel = 0;
+                    return;
+                }
             }
+            await sendDataPayload(payload);
+
+        } else {
+            // HEX רגיל
+            let payload = state === 1 ? new Uint8Array([channel]) : new Uint8Array([0x00]);
+            await sendDataPayload(payload);
         }
     }
 
@@ -560,3 +580,7 @@
 
 </body>
 </html>
+
+
+
+
