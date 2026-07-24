@@ -3,53 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>לוי רמפה - שלט בלוטוס</title>
+    <title>לוי רמפה - שלט בלוטוס ממנטרי</title>
     <style>
         * {
             box-sizing: border-box;
         }
         body {
             font-family: Arial, sans-serif;
-            background-color: #121212;
+            background-color: #0f172a;
             color: #ffffff;
             text-align: center;
             margin: 0;
-            padding: 20px;
+            padding: 16px;
             direction: rtl;
         }
         .card {
-            background-color: #1e1e1e;
-            border-radius: 16px;
-            padding: 24px;
+            background-color: #1e293b;
+            border-radius: 20px;
+            padding: 20px;
             max-width: 420px;
             margin: auto;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-            border: 1px solid #2a2a2a;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            border: 1px solid #334155;
+            overflow: hidden;
         }
+        
+        /* תמונת רקע/באנר של משאית עם רמפה */
+        .truck-header {
+            width: 100%;
+            height: 160px;
+            border-radius: 14px;
+            object-fit: cover;
+            border: 2px solid #00e676;
+            margin-bottom: 12px;
+        }
+
         h1 { 
             font-size: 26px; 
             color: #00e676; 
-            margin-top: 0;
-            margin-bottom: 6px; 
+            margin: 4px 0;
         }
         p { 
             font-size: 14px; 
-            color: #aaa; 
+            color: #94a3b8; 
             margin-top: 0; 
         }
         hr {
             border: none;
-            border-top: 1px solid #333;
-            margin: 18px 0;
+            border-top: 1px solid #334155;
+            margin: 16px 0;
         }
         
         input {
             width: 100%;
             padding: 14px;
             margin: 10px 0;
-            border-radius: 8px;
-            border: 1px solid #444;
-            background-color: #2a2a2a;
+            border-radius: 10px;
+            border: 1px solid #475569;
+            background-color: #0f172a;
             color: #fff;
             font-size: 20px;
             text-align: center;
@@ -60,16 +71,19 @@
         }
         
         button, .btn-link {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             width: 100%;
             padding: 16px;
             margin: 8px 0;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.15s ease, transform 0.1s ease;
+            transition: all 0.15s ease;
             user-select: none;
             -webkit-user-select: none;
             touch-action: manipulation;
@@ -77,33 +91,32 @@
             box-sizing: border-box;
         }
         button:active, .btn-link:active {
-            transform: scale(0.98);
+            transform: scale(0.96);
         }
         
         .btn-primary { 
-            background-color: #29b6f6; 
-            color: #000; 
+            background-color: #0284c7; 
+            color: #ffffff; 
         }
         .btn-primary:active { 
-            background-color: #0288d1; 
+            background-color: #0369a1; 
         }
 
         .btn-action { 
             background-color: #00e676; 
             color: #000; 
             font-size: 20px;
-            padding: 20px;
+            padding: 18px;
+            border-radius: 14px;
+            box-shadow: 0 4px 12px rgba(0,230,118,0.2);
         }
         .btn-action:active { 
             background-color: #00a850; 
         }
 
         .btn-secondary { 
-            background-color: #424242; 
+            background-color: #334155; 
             color: #fff; 
-        }
-        .btn-secondary:active { 
-            background-color: #212121; 
         }
 
         .btn-whatsapp {
@@ -111,22 +124,34 @@
             color: #ffffff;
             font-size: 16px;
         }
-        .btn-whatsapp:active {
-            background-color: #1ebc57;
+        .btn-call {
+            background-color: #e11d48;
+            color: #ffffff;
+            font-size: 16px;
         }
         
         .hidden { 
             display: none !important; 
         }
 
-        #status { 
-            margin-top: 12px; 
+        /* חיווי סטטוס בלוטוס */
+        .bt-status-box { 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px; 
             font-weight: bold; 
             font-size: 16px;
             color: #ffca28; 
-            padding: 8px;
-            background-color: #262626;
-            border-radius: 6px;
+            padding: 10px;
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 10px;
+        }
+
+        .bt-icon {
+            font-size: 22px;
         }
 
         .error-msg {
@@ -134,13 +159,44 @@
             margin-top: 8px;
             font-size: 14px;
         }
+
+        /* שלט חצים במבנה D-Pad של שלט טלוויזיה */
+        .remote-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: auto auto auto;
+            gap: 10px;
+            align-items: center;
+            justify-items: center;
+            margin: 16px 0;
+        }
+        .grid-up { grid-column: 2; grid-row: 1; width: 100%; }
+        .grid-left { grid-column: 1; grid-row: 2; width: 100%; }
+        .grid-right { grid-column: 3; grid-row: 2; width: 100%; }
+        .grid-down { grid-column: 2; grid-row: 3; width: 100%; }
+        .grid-center { grid-column: 2; grid-row: 2; font-size: 11px; color: #64748b; line-height: 1.2; }
+
+        .order-box {
+            background-color: #0f172a;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px dashed #00e676;
+            margin-top: 16px;
+        }
+        .order-box h4 {
+            margin: 0 0 6px 0;
+            color: #00e676;
+        }
     </style>
 </head>
 <body>
 
 <div class="card">
+    <!-- תמונת ייצוג של משאית ורמפה -->
+    <img src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80" alt="משאית עם רמפה" class="truck-header">
+
     <h1>לוי רמפה</h1>
-    <p>מערכת שליטה בלוטוס</p>
+    <p>אפליקציית שליטה בלוטוס לרמפה הידראולית</p>
     <hr>
 
     <!-- מסך 1: הזנת קוד גישה -->
@@ -148,53 +204,79 @@
         <h3>הזן קוד גישה</h3>
         <p id="passHint">קוד ראשוני לברירת מחדל: 1234</p>
         <input type="password" id="pinInput" placeholder="****" maxlength="8" inputmode="numeric">
-        <button class="btn-primary" onclick="checkPin()">כנס לשלט</button>
+        <button class="btn-primary" onclick="checkPin()">🔑 כנס לשלט</button>
         <div id="loginError" class="error-msg"></div>
     </div>
 
-    <!-- מסך 2: שליטה ברמפה (מוצג לאחר הזנת סיסמה נכונה) -->
+    <!-- מסך 2: שליטה ברמפה -->
     <div id="controlSection" class="hidden">
-        <button class="btn-primary" onclick="connectBluetooth()">🔌 התחבר לבלוטוס</button>
-        <div id="status">מנותק</div>
+        <button class="btn-primary" onclick="connectBluetooth()">📶 התחבר לבלוטוס BLE</button>
+        
+        <div class="bt-status-box" id="statusBox">
+            <span class="bt-icon" id="btIcon">🔴</span>
+            <span id="statusText">בלוטוס מנותק</span>
+        </div>
         
         <hr>
         
-        <!-- כפתורי תפעול הרמפה (מומנטריים: לחיצה מפעילה, עזיבה מפסיקה) -->
-        <button class="btn-action" 
-                ontouchstart="handlePress(event, 1)" ontouchend="handlePress(event, 0)"
-                onmousedown="handlePress(event, 1)" onmouseup="handlePress(event, 0)">⬆️ הרם רמפה</button>
-                
-        <button class="btn-action" 
-                ontouchstart="handlePress(event, 2)" ontouchend="handlePress(event, 0)"
-                onmousedown="handlePress(event, 2)" onmouseup="handlePress(event, 0)">⬇️ הורד רמפה</button>
+        <!-- שלט חצים ממנטרי (לחיצה מפעילה יחד עם ממסר 5, עזיבה מכבה הכל) -->
+        <div class="remote-grid">
+            <div class="grid-up">
+                <button class="btn-action" 
+                        ontouchstart="startAction(event, 0x01)" ontouchend="stopAction(event)"
+                        onmousedown="startAction(event, 0x01)" onmouseup="stopAction(event)" onmouseleave="stopAction(event)">⬆️<br>הרם</button>
+            </div>
+            
+            <div class="grid-left">
+                <button class="btn-action" 
+                        ontouchstart="startAction(event, 0x03)" ontouchend="stopAction(event)"
+                        onmousedown="startAction(event, 0x03)" onmouseup="stopAction(event)" onmouseleave="stopAction(event)">⬅️<br>פתח</button>
+            </div>
+
+            <div class="grid-center">
+                <span>לוי<br>רמפה<br><b>BLE</b></span>
+            </div>
+
+            <div class="grid-right">
+                <button class="btn-action" 
+                        ontouchstart="startAction(event, 0x04)" ontouchend="stopAction(event)"
+                        onmousedown="startAction(event, 0x04)" onmouseup="stopAction(event)" onmouseleave="stopAction(event)">➡️<br>סגור</button>
+            </div>
+
+            <div class="grid-down">
+                <button class="btn-action" 
+                        ontouchstart="startAction(event, 0x02)" ontouchend="stopAction(event)"
+                        onmousedown="startAction(event, 0x02)" onmouseup="stopAction(event)" onmouseleave="stopAction(event)">⬇️<br>הורד</button>
+            </div>
+        </div>
         
-        <hr style="margin-top: 24px;">
+        <hr>
         
         <!-- הגדרת סיסמה אישית -->
         <h4>שינוי סיסמה אישית</h4>
         <input type="password" id="newPinInput" placeholder="סיסמה חדשה (4 ספרות)" maxlength="8" inputmode="numeric">
-        <button class="btn-secondary" onclick="changePin()">עדכן סיסמה אישית</button>
+        <button class="btn-secondary" onclick="changePin()">עדכן סיסמה</button>
         
-        <hr style="margin-top: 20px;">
-        
-        <!-- כפתור תמיכה ב-WhatsApp -->
-        <a href="https://wa.me/" target="_blank" class="btn-link btn-whatsapp">💬 תמיכה ב-WhatsApp</a>
+        <!-- אזור הזמנת המוח והתקשרות -->
+        <div class="order-box">
+            <h4>להזמנת המוח וסיוע טכני</h4>
+            <p style="margin-bottom: 8px; color: #e2e8f0;">טלפון: 052-3401960 (972+)</p>
+            <a href="tel:+972523401960" class="btn-link btn-call">📞 חייג עכשיו להזמנות</a>
+            <a href="https://wa.me/972523401960" target="_blank" class="btn-link btn-whatsapp">💬 פנה אלינו ב-WhatsApp</a>
+        </div>
     </div>
 </div>
 
 <script>
-    // קוד גישה ברירת מחדל
     const DEFAULT_PIN = "1234";
     let savedPin = DEFAULT_PIN;
 
-    // טעינת הסיסמה מזיכרון המכשיר במידה וקיימת
     try {
         savedPin = localStorage.getItem("user_pin") || DEFAULT_PIN;
     } catch (e) {
         console.warn("localStorage אינו נגיש בדפדפן זה", e);
     }
 
-    // בדיקת קוד גישה
     function checkPin() {
         const input = document.getElementById("pinInput").value;
         const errorDiv = document.getElementById("loginError");
@@ -208,7 +290,6 @@
         }
     }
 
-    // עדכון קוד גישה
     function changePin() {
         const newPin = document.getElementById("newPinInput").value;
         if (newPin.length >= 4) {
@@ -225,66 +306,90 @@
         }
     }
 
-    // משתני Bluetooth
     let bluetoothDevice;
     let gattServer;
     let relayService;
     let relayCharacteristic;
 
-    // התחברות לרכיב ה-Bluetooth
     async function connectBluetooth() {
-        const statusDiv = document.getElementById("status");
+        const statusText = document.getElementById("statusText");
+        const btIcon = document.getElementById("btIcon");
         
         if (!navigator.bluetooth) {
-            statusDiv.innerText = "🔴 הדפדפן אינו תומך ב-Bluetooth";
-            statusDiv.style.color = "#ff5252";
+            statusText.innerText = "הדפדפן אינו תומך ב-Bluetooth";
+            btIcon.innerText = "🔴";
             alert("נא לפתוח את הקישור בדפדפן Chrome במכשיר אנדרואיד או מחשב.");
             return;
         }
 
         try {
-            statusDiv.innerText = "מחפש התקן BLE...";
-            statusDiv.style.color = "#ffca28";
+            statusText.innerText = "מחפש רכיב BLE...";
+            btIcon.innerText = "🟡";
             
             bluetoothDevice = await navigator.bluetooth.requestDevice({
                 acceptAllDevices: true,
                 optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb']
             });
 
-            statusDiv.innerText = "מתחבר...";
+            statusText.innerText = "מתחבר...";
             gattServer = await bluetoothDevice.gatt.connect();
             
             relayService = await gattServer.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
             relayCharacteristic = await relayService.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
 
-            statusDiv.innerText = "🟢 מחובר בהצלחה!";
-            statusDiv.style.color = "#00e676";
+            statusText.innerText = "מחובר לבלוטוס בהצלחה!";
+            statusText.style.color = "#00e676";
+            btIcon.innerText = "🟢";
+
+            // האזנה לניתוק אלחוטי
+            bluetoothDevice.addEventListener('gattserverdisconnected', onDisconnected);
         } catch (error) {
             console.error(error);
-            statusDiv.innerText = "🔴 שגיאה בחיבור";
-            statusDiv.style.color = "#ff5252";
+            statusText.innerText = "שגיאה בחיבור בלוטוס";
+            statusText.style.color = "#ff5252";
+            btIcon.innerText = "🔴";
         }
     }
 
-    // טיפול בבלעדיות של אירועי מגע/עכבר
-    function handlePress(event, command) {
+    function onDisconnected() {
+        const statusText = document.getElementById("statusText");
+        const btIcon = document.getElementById("btIcon");
+        statusText.innerText = "בלוטוס נותק";
+        statusText.style.color = "#ff5252";
+        btIcon.innerText = "🔴";
+    }
+
+    // פונקציית לחיצה ממנטרית (הפעלה + ממסר 5)
+    async function startAction(event, hexCommand) {
         if (event.type === 'touchstart') {
             event.preventDefault();
         }
-        sendRelay(command);
-    }
-
-    // שליחת פקודה לרכיב הממסר
-    async function sendRelay(command) {
         if (!relayCharacteristic) return;
         try {
-            let data = new Uint8Array([command]);
-            await relayCharacteristic.writeValue(data);
+            // שולח את הפקודה המבוקשת יחד עם ממסר 5 (לדוגמה: [0x05, 0x01])
+            const buffer = new Uint8Array([0x05, hexCommand]);
+            await relayCharacteristic.writeValue(buffer);
         } catch (e) {
-            console.log("שגיאה בשליחת פקודה:", e);
+            console.log("שגיאה בשליחת פקודת הפעלה:", e);
+        }
+    }
+
+    // פונקציית עזיבה ממנטרית (כיבוי כללי לממסרים)
+    async function stopAction(event) {
+        if (event && event.type === 'touchend') {
+            event.preventDefault();
+        }
+        if (!relayCharacteristic) return;
+        try {
+            // שולח פקודת איפוס/כיבוי מוחלט (0x00) שסוגרת את הכל
+            const buffer = new Uint8Array([0x00]);
+            await relayCharacteristic.writeValue(buffer);
+        } catch (e) {
+            console.log("שגיאה בשליחת פקודת עצירה:", e);
         }
     }
 </script>
 
 </body>
 </html>
+
