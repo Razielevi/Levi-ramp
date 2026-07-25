@@ -79,22 +79,8 @@
             padding: 18px 8px;
             border-radius: 14px;
             box-shadow: 0 4px 12px rgba(0,230,118,0.2);
-            transition: transform 0.1s;
         }
         .btn-action:active, .btn-action.active { background-color: #00a850; transform: scale(0.95); }
-        
-        /* עיצוב כפתור חירום */
-        .btn-stop {
-            background-color: #ef4444; 
-            color: #ffffff; 
-            font-size: 20px;
-            padding: 20px 8px;
-            border-radius: 14px;
-            box-shadow: 0 4px 15px rgba(239,68,68,0.4);
-            margin-top: 15px;
-        }
-        .btn-stop:active, .btn-stop.active { background-color: #dc2626; transform: scale(0.95); }
-
         .btn-secondary { background-color: #334155; color: #fff; }
         .btn-whatsapp { background-color: #25d366; color: #ffffff; font-size: 15px; }
         .btn-call { background-color: #e11d48; color: #ffffff; font-size: 15px; }
@@ -159,6 +145,7 @@
     <p id="t-subtitle">Hydraulic Ramp Bluetooth Remote Controller</p>
     <hr>
 
+    <!-- Screen 1: PIN Input -->
     <div id="loginSection">
         <h3 id="t-loginTitle">Enter Passcode</h3>
         <p id="t-passHint">Default Passcode: 1234</p>
@@ -167,6 +154,7 @@
         <div id="loginError" style="color:#ff5252; margin-top:8px;"></div>
     </div>
 
+    <!-- Screen 2: Control & Settings -->
     <div id="controlSection" class="hidden">
         <button class="btn-primary" onclick="connectBluetooth()" id="t-connectBt">📶 Connect Bluetooth BLE</button>
         
@@ -177,6 +165,7 @@
 
         <button class="btn-settings" onclick="toggleSettings()" id="t-settingsBtn">⚙️ Settings & Language</button>
 
+        <!-- Settings Panel -->
         <div id="settingsPanel" class="settings-panel hidden">
             <h4 style="margin:0 0 10px 0; color:#0284c7; text-align:center;" id="t-settingsTitle">Module & System Settings</h4>
             
@@ -211,36 +200,39 @@
         
         <hr>
         
+        <!-- Directional Remote Grid (תוקנה ההחלפה: פתח בימין, סגור בשמאל) -->
         <div class="remote-grid">
             <div class="grid-up">
                 <button class="btn-action" id="btnUp">⬆️<br><span id="t-btnUp">UP</span></button>
             </div>
             
+            <!-- סגור בשמאל -->
             <div class="grid-left">
-                <button class="btn-action" id="btnLeft">⬅️<br><span id="t-btnLeft">OPEN</span></button>
+                <button class="btn-action" id="btnLeft">⬅️<br><span id="t-btnLeft">CLOSE</span></button>
             </div>
 
             <div class="grid-center">
                 <span>LEVI<br>RAMP<br><b id="modeDisplay">NL</b></span>
             </div>
 
+            <!-- פתח בימין -->
             <div class="grid-right">
-                <button class="btn-action" id="btnRight">➡️<br><span id="t-btnRight">CLOSE</span></button>
+                <button class="btn-action" id="btnRight">➡️<br><span id="t-btnRight">OPEN</span></button>
             </div>
 
             <div class="grid-down">
                 <button class="btn-action" id="btnDown">⬇️<br><span id="t-btnDown">DOWN</span></button>
             </div>
         </div>
-
-        <button class="btn-stop" id="btnEmergencyStop" onclick="triggerEmergencyStop()">🛑 <span id="t-btnStop">EMERGENCY STOP</span></button>
         
         <hr>
         
+        <!-- Change Passcode -->
         <h4 id="t-changePinTitle">Change Passcode</h4>
         <input type="password" id="newPinInput" placeholder="New PIN (4 digits)" maxlength="8" inputmode="numeric">
         <button class="btn-secondary" onclick="changePin()" id="t-updatePinBtn">Update Passcode</button>
         
+        <!-- Order & Support Box -->
         <div class="order-box">
             <h4 style="margin:0 0 6px 0; color:#00e676;" id="t-supportTitle">Order & Technical Support</h4>
             <p style="margin-bottom: 8px; color: #e2e8f0;">Tel: +972-52-3401960</p>
@@ -281,9 +273,8 @@
             closeSettings: "Close Settings",
             btnUp: "UP",
             btnDown: "DOWN",
-            btnLeft: "OPEN",
-            btnRight: "CLOSE",
-            btnStop: "EMERGENCY STOP",
+            btnLeft: "CLOSE",
+            btnRight: "OPEN",
             changePinTitle: "Change Passcode",
             updatePinBtn: "Update Passcode",
             supportTitle: "Order & Technical Support",
@@ -315,9 +306,8 @@
             closeSettings: "סגור הגדרות",
             btnUp: "הרם",
             btnDown: "הורד",
-            btnLeft: "פתח",
-            btnRight: "סגור",
-            btnStop: "עצירת חירום",
+            btnLeft: "סגור",
+            btnRight: "פתח",
             changePinTitle: "שינוי סיסמה אישית",
             updatePinBtn: "עדכן סיסמה",
             supportTitle: "להזמנת המוח וסיוע טכני",
@@ -370,7 +360,6 @@
         document.getElementById("t-btnDown").innerText = t.btnDown;
         document.getElementById("t-btnLeft").innerText = t.btnLeft;
         document.getElementById("t-btnRight").innerText = t.btnRight;
-        document.getElementById("t-btnStop").innerText = t.btnStop || "STOP";
         
         document.getElementById("t-changePinTitle").innerText = t.changePinTitle;
         document.getElementById("t-updatePinBtn").innerText = t.updatePinBtn;
@@ -551,30 +540,15 @@
         }
     }
 
-    // פונקציית עצירת חירום
-    async function triggerEmergencyStop() {
-        // שחרור כל הכפתורים ויזואלית
-        document.querySelectorAll('.btn-action').forEach(btn => {
-            btn.classList.remove('active');
-        });
+    let activePressedChannel = 0;
 
-        if (!relayCharacteristic) return;
-
-        // שליחת פקודת עצירה גורפת
-        if (workMode === "TEXT_NL") {
-            await sendDataPayload(new TextEncoder().encode("0\r\n"));
-        } else if (workMode === "RELAY_A0") {
-            if (activeChannel !== 0) {
-                await sendDataPayload(new Uint8Array([0xA0, activeChannel, 0x00, (0xA0 + activeChannel + 0) & 0xFF]));
-                await new Promise(r => setTimeout(r, 30));
-            }
-            // תמיד נוודא שממסר 5 גם מתכבה
-            await sendDataPayload(new Uint8Array([0xA0, 0x05, 0x00, (0xA0 + 5 + 0) & 0xFF]));
-        } else {
-            await sendDataPayload(new Uint8Array([0x00]));
+    function stopActiveChannel() {
+        if (activePressedChannel !== 0) {
+            const ch = activePressedChannel;
+            activePressedChannel = 0;
+            sendCommand(ch, 0);
+            document.querySelectorAll(".btn-action").forEach(b => b.classList.remove("active"));
         }
-        
-        activeChannel = 0;
     }
 
     function bindMomentary(btnId, channelCode) {
@@ -582,45 +556,45 @@
         if (!btn) return;
 
         const start = (e) => {
-            e.preventDefault(); // חוסם פעולות ברירת מחדל של הדפדפן (כמו גלילה)
-            if (btn.classList.contains("active")) return;
-            
+            e.preventDefault();
             btn.classList.add("active");
+            activePressedChannel = channelCode;
             sendCommand(channelCode, 1);
-            
-            // לוכד את פוינטר האצבע כך שגם אם היא מחליקה החוצה - נזהה את השחרור
-            if (e.pointerId) {
-                btn.setPointerCapture(e.pointerId);
-            }
         };
 
         const stop = (e) => {
             e.preventDefault();
-            if (!btn.classList.contains("active")) return;
-            
             btn.classList.remove("active");
-            sendCommand(channelCode, 0);
-            
-            if (e.pointerId) {
-                btn.releasePointerCapture(e.pointerId);
+            if (activePressedChannel === channelCode) {
+                activePressedChannel = 0;
+                sendCommand(channelCode, 0);
             }
         };
 
-        // שימוש ב-Pointer Events שפותרים את ההתנגשות בין עכבר למסך מגע
-        btn.addEventListener("pointerdown", start);
-        btn.addEventListener("pointerup", stop);
-        btn.addEventListener("pointercancel", stop);
-        btn.addEventListener("pointerout", stop); // מזהה במפורש יציאה מגבולות הלחצן
-        
-        // חסימת הופעת תפריט "קליק ימני" או סימון טקסט במובייל בעת לחיצה ארוכה
-        btn.addEventListener("contextmenu", (e) => e.preventDefault());
+        btn.addEventListener("touchstart", start, { passive: false });
+        btn.addEventListener("touchend", stop, { passive: false });
+        btn.addEventListener("touchcancel", stop, { passive: false });
+
+        btn.addEventListener("mousedown", start);
+        btn.addEventListener("mouseup", stop);
+        btn.addEventListener("mouseleave", stop);
     }
 
     function setupButtons() {
         bindMomentary("btnUp", 1);
         bindMomentary("btnDown", 2);
-        bindMomentary("btnLeft", 3);
-        bindMomentary("btnRight", 4);
+        // btnLeft הוא כעת סגור (ערוץ 4) ו-btnRight הוא פתח (ערוץ 3)
+        bindMomentary("btnLeft", 4);
+        bindMomentary("btnRight", 3);
+
+        // הגנה קריטית ברמת החלון למניעת תקיעת ממסר בעת יציאה או שחרור אצבע מחוץ לכפתור
+        window.addEventListener("mouseup", stopActiveChannel);
+        window.addEventListener("touchend", stopActiveChannel);
+        window.addEventListener("touchcancel", stopActiveChannel);
+        window.addEventListener("blur", stopActiveChannel);
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) stopActiveChannel();
+        });
     }
 
     changeLanguage(currentLang);
@@ -628,3 +602,4 @@
 
 </body>
 </html>
+
