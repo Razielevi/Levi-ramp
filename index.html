@@ -1,1194 +1,661 @@
 <!DOCTYPE html>
-
-<html lang="he" dir="rtl">
-
+<html lang="en" dir="ltr">
 <head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-<title>Levi Ramp - Bluetooth Remote</title>
-
-<style>
-
-* {
-
-box-sizing: border-box;
-
-user-select: none;
-
--webkit-user-select: none;
-
-touch-action: none;
-
-}
-
-body {
-
-font-family: Arial, sans-serif;
-
-background-color: #0f172a;
-
-color: #ffffff;
-
-text-align: center;
-
-margin: 0;
-
-padding: 16px;
-
-direction: ltr;
-
-}
-
-.card {
-
-background-color: #1e293b;
-
-border-radius: 20px;
-
-padding: 20px;
-
-max-width: 420px;
-
-margin: auto;
-
-box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-
-border: 1px solid #334155;
-
-overflow: hidden;
-
-}
-
-.truck-header {
-
-width: 100%;
-
-height: 150px;
-
-border-radius: 14px;
-
-object-fit: cover;
-
-border: 2px solid #00e676;
-
-margin-bottom: 12px;
-
-}
-
-h1 { font-size: 26px; color: #00e676; margin: 4px 0; }
-
-p { font-size: 14px; color: #94a3b8; margin-top: 0; }
-
-hr { border: none; border-top: 1px solid #334155; margin: 16px 0; }
-
-​input, select {
-
-width: 100%;
-
-padding: 12px;
-
-margin: 8px 0;
-
-border-radius: 10px;
-
-border: 1px solid #475569;
-
-background-color: #0f172a;
-
-color: #fff;
-
-font-size: 16px;
-
-text-align: center;
-
-outline: none;
-
-}
-
-input:focus, select:focus { border-color: #00e676; }
-
-​button, .btn-link {
-
-display: flex;
-
-align-items: center;
-
-justify-content: center;
-
-gap: 8px;
-
-width: 100%;
-
-padding: 16px;
-
-margin: 8px 0;
-
-border: none;
-
-border-radius: 12px;
-
-font-size: 18px;
-
-font-weight: bold;
-
-cursor: pointer;
-
-text-decoration: none;
-
-box-sizing: border-box;
-
-transition: transform 0.1s ease, background-color 0.1s ease;
-
-}
-
-​.btn-primary { background-color: #0284c7; color: #ffffff; }
-
-.btn-action {
-
-background-color: #00e676;
-
-color: #000;
-
-font-size: 18px;
-
-padding: 18px 8px;
-
-border-radius: 14px;
-
-box-shadow: 0 4px 12px rgba(0,230,118,0.2);
-
-}
-
-.btn-action:active, .btn-action.active {
-
-background-color: #00a850 !important;
-
-transform: scale(0.94);
-
-box-shadow: 0 0 20px rgba(0,230,118,0.8);
-
-}
-
-.btn-emergency {
-
-background-color: #ef4444;
-
-color: #ffffff;
-
-font-size: 20px;
-
-padding: 16px;
-
-border-radius: 14px;
-
-box-shadow: 0 4px 15px rgba(239,68,68,0.4);
-
-border: 2px solid #f87171;
-
-margin-top: 14px;
-
-width: 100%;
-
-font-weight: bold;
-
-cursor: pointer;
-
-}
-
-.btn-emergency:active {
-
-background-color: #dc2626;
-
-transform: scale(0.96);
-
-}
-
-.btn-secondary { background-color: #334155; color: #fff; }
-
-.btn-whatsapp { background-color: #25d366; color: #ffffff; font-size: 15px; }
-
-.btn-call { background-color: #e11d48; color: #ffffff; font-size: 15px; }
-
-.btn-settings { background-color: #64748b; color: #fff; font-size: 14px; padding: 10px; }
-
-​.hidden { display: none !important; }
-
-​.bt-status-box {
-
-display: flex;
-
-align-items: center;
-
-justify-content: center;
-
-gap: 10px;
-
-margin-top: 10px;
-
-font-weight: bold;
-
-font-size: 16px;
-
-color: #ffca28;
-
-padding: 10px;
-
-background-color: #0f172a;
-
-border: 1px solid #334155;
-
-border-radius: 10px;
-
-}
-
-​.remote-grid {
-
-display: grid;
-
-grid-template-columns: 1fr 1fr 1fr;
-
-grid-template-rows: auto auto auto;
-
-gap: 10px;
-
-align-items: center;
-
-justify-items: center;
-
-margin: 16px 0;
-
-}
-
-.grid-up { grid-column: 2; grid-row: 1; width: 100%; }
-
-.grid-left { grid-column: 1; grid-row: 2; width: 100%; }
-
-.grid-right { grid-column: 3; grid-row: 2; width: 100%; }
-
-.grid-down { grid-column: 2; grid-row: 3; width: 100%; }
-
-.grid-center { grid-column: 2; grid-row: 2; font-size: 11px; color: #64748b; line-height: 1.2; }
-
-​.order-box {
-
-background-color: #0f172a;
-
-padding: 12px;
-
-border-radius: 12px;
-
-border: 1px dashed #00e676;
-
-margin-top: 16px;
-
-}
-
-.settings-panel {
-
-background-color: #0f172a;
-
-padding: 14px;
-
-border-radius: 12px;
-
-border: 1px solid #0284c7;
-
-text-align: inherit;
-
-margin-bottom: 15px;
-
-}
-
-.settings-panel label { font-size: 13px; color: #cbd5e1; display: block; margin-top: 8px; }
-
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Levi Ramp - Bluetooth Remote</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0f172a;
+            color: #ffffff;
+            text-align: center;
+            margin: 0;
+            padding: 16px;
+            direction: ltr;
+        }
+        .card {
+            background-color: #1e293b;
+            border-radius: 20px;
+            padding: 20px;
+            max-width: 420px;
+            margin: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            border: 1px solid #334155;
+            overflow: hidden;
+        }
+        .truck-header {
+            width: 100%;
+            height: 150px;
+            border-radius: 14px;
+            object-fit: cover;
+            border: 2px solid #00e676;
+            margin-bottom: 12px;
+        }
+        h1 { font-size: 26px; color: #00e676; margin: 4px 0; }
+        p { font-size: 14px; color: #94a3b8; margin-top: 0; }
+        hr { border: none; border-top: 1px solid #334155; margin: 16px 0; }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 10px;
+            border: 1px solid #475569;
+            background-color: #0f172a;
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+            outline: none;
+        }
+        input:focus, select:focus { border-color: #00e676; }
+        
+        button, .btn-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 16px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+            text-decoration: none;
+            box-sizing: border-box;
+        }
+        
+        .btn-primary { background-color: #0284c7; color: #ffffff; }
+        .btn-action { 
+            background-color: #00e676; 
+            color: #000; 
+            font-size: 18px;
+            padding: 18px 8px;
+            border-radius: 14px;
+            box-shadow: 0 4px 12px rgba(0,230,118,0.2);
+        }
+        .btn-action:active, .btn-action.active { background-color: #00a850; transform: scale(0.95); }
+        
+        .btn-emergency {
+            background-color: #e11d48;
+            color: #ffffff;
+            font-size: 20px;
+            padding: 16px;
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(225,29,72,0.4);
+            margin-top: 10px;
+            border: 2px solid #f43f5e;
+        }
+        .btn-emergency:active { background-color: #be123c; transform: scale(0.95); }
+
+        .btn-secondary { background-color: #334155; color: #fff; }
+        .btn-whatsapp { background-color: #25d366; color: #ffffff; font-size: 15px; }
+        .btn-call { background-color: #e11d48; color: #ffffff; font-size: 15px; }
+        .btn-settings { background-color: #64748b; color: #fff; font-size: 14px; padding: 10px; }
+
+        .hidden { display: none !important; }
+
+        .bt-status-box { 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px; 
+            font-weight: bold; 
+            font-size: 16px;
+            color: #ffca28; 
+            padding: 10px;
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 10px;
+        }
+
+        .remote-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: auto auto auto;
+            gap: 10px;
+            align-items: center;
+            justify-items: center;
+            margin: 16px 0;
+        }
+        .grid-up { grid-column: 2; grid-row: 1; width: 100%; }
+        .grid-left { grid-column: 1; grid-row: 2; width: 100%; }
+        .grid-right { grid-column: 3; grid-row: 2; width: 100%; }
+        .grid-down { grid-column: 2; grid-row: 3; width: 100%; }
+        .grid-center { grid-column: 2; grid-row: 2; font-size: 11px; color: #64748b; line-height: 1.2; }
+
+        .order-box {
+            background-color: #0f172a;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px dashed #00e676;
+            margin-top: 16px;
+        }
+        .settings-panel {
+            background-color: #0f172a;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid #0284c7;
+            text-align: inherit;
+            margin-bottom: 15px;
+        }
+        .settings-panel label { font-size: 13px; color: #cbd5e1; display: block; margin-top: 8px; }
+    </style>
 </head>
-
 <body>
 
-​<div class="card">
+<div class="card">
+    <img src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80" alt="Truck Ramp" class="truck-header">
 
-<img src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80" alt="Truck Ramp" class="truck-header">
+    <h1>LEVI RAMP</h1>
+    <p id="t-subtitle">Hydraulic Ramp Bluetooth Remote Controller</p>
+    <hr>
 
-​<h1>LEVI RAMP</h1>
+    <!-- Screen 1: PIN Input -->
+    <div id="loginSection">
+        <h3 id="t-loginTitle">Enter Passcode</h3>
+        <p id="t-passHint">Default Passcode: 1234</p>
+        <input type="password" id="pinInput" placeholder="****" maxlength="8" inputmode="numeric">
+        <button class="btn-primary" onclick="checkPin()" id="t-loginBtn">🔑 Enter Remote</button>
+        <div id="loginError" style="color:#ff5252; margin-top:8px;"></div>
+    </div>
 
-<p id="t-subtitle">Hydraulic Ramp Bluetooth Remote Controller</p>
+    <!-- Screen 2: Control & Settings -->
+    <div id="controlSection" class="hidden">
+        <button class="btn-primary" onclick="connectBluetooth()" id="t-connectBt">📶 Connect Bluetooth BLE</button>
+        
+        <div class="bt-status-box">
+            <span id="btIcon">🔴</span>
+            <span id="statusText">Bluetooth Disconnected</span>
+        </div>
 
-<hr>
+        <button class="btn-settings" onclick="toggleSettings()" id="t-settingsBtn">⚙️ Settings & Language</button>
 
-​<!-- מסך 1: הזנת קוד גישה -->
+        <!-- Settings Panel -->
+        <div id="settingsPanel" class="settings-panel hidden">
+            <h4 style="margin:0 0 10px 0; color:#0284c7; text-align:center;" id="t-settingsTitle">Module & System Settings</h4>
+            
+            <label id="t-langLabel">Language / שפה:</label>
+            <select id="langSelect" onchange="changeLanguage(this.value)">
+                <option value="en">English</option>
+                <option value="he">עברית (Hebrew)</option>
+                <option value="ar">العربية (Arabic)</option>
+                <option value="es">Español (Spanish)</option>
+                <option value="ru">Русский (Russian)</option>
+                <option value="fr">Français (French)</option>
+                <option value="de">Deutsch (German)</option>
+                <option value="zh">中文 (Chinese)</option>
+                <option value="tr">Türkçe (Turkish)</option>
+            </select>
 
-<div id="loginSection">
+            <label id="t-modeLabel">Transmission Protocol (Module Mode):</label>
+            <select id="modeSelect" onchange="saveSettings()">
+                <option value="TEXT_NL">Text with NewLine (e.g. "1\r\n")</option>
+                <option value="RELAY_A0">Chinese 8-Relay Protocol (0xA0)</option>
+                <option value="HEX">Simple HEX Bytes</option>
+            </select>
 
-<h3 id="t-loginTitle">Enter Passcode</h3>
+            <label id="t-relay5Label">Master Relay #5 Dual Trigger:</label>
+            <select id="relay5Select" onchange="saveSettings()">
+                <option value="true" id="t-r5Yes">YES - Trigger Relay #5 with every action</option>
+                <option value="false" id="t-r5No">NO - Single Relay mode</option>
+            </select>
 
-<p id="t-passHint">Default Passcode: 1234</p>
+            <button class="btn-secondary" style="padding:8px; margin-top:12px; font-size:14px;" onclick="toggleSettings()" id="t-closeSettings">Close Settings</button>
+        </div>
+        
+        <hr>
+        
+        <!-- Directional Remote Grid -->
+        <div class="remote-grid">
+            <div class="grid-up">
+                <button class="btn-action" id="btnUp">⬆️<br><span id="t-btnUp">UP</span></button>
+            </div>
+            
+            <!-- CLOSE (סגור) - בצד שמאל -->
+            <div class="grid-left">
+                <button class="btn-action" id="btnLeft">⬅️<br><span id="t-btnLeft">CLOSE</span></button>
+            </div>
 
-<input type="password" id="pinInput" placeholder="****" maxlength="8" inputmode="numeric">
+            <div class="grid-center">
+                <span>LEVI<br>RAMP<br><b id="modeDisplay">NL</b></span>
+            </div>
 
-<button class="btn-primary" onclick="checkPin()" id="t-loginBtn">🔑 Enter Remote</button>
+            <!-- OPEN (פתח) - בצד ימין -->
+            <div class="grid-right">
+                <button class="btn-action" id="btnRight">➡️<br><span id="t-btnRight">OPEN</span></button>
+            </div>
 
-<div id="loginError" style="color:#ff5252; margin-top:8px;"></div>
+            <div class="grid-down">
+                <button class="btn-action" id="btnDown">⬇️<br><span id="t-btnDown">DOWN</span></button>
+            </div>
+        </div>
+        
+        <!-- לחצן עצירת חירום -->
+        <button class="btn-emergency" id="btnEmergency">🛑<br><span id="t-btnEmergency">EMERGENCY STOP</span></button>
 
+        <hr>
+        
+        <!-- Change Passcode -->
+        <h4 id="t-changePinTitle">Change Passcode</h4>
+        <input type="password" id="newPinInput" placeholder="New PIN (4 digits)" maxlength="8" inputmode="numeric">
+        <button class="btn-secondary" onclick="changePin()" id="t-updatePinBtn">Update Passcode</button>
+        
+        <!-- Order & Support Box -->
+        <div class="order-box">
+            <h4 style="margin:0 0 6px 0; color:#00e676;" id="t-supportTitle">Order & Technical Support</h4>
+            <p style="margin-bottom: 8px; color: #e2e8f0;">Tel: +972-52-3401960</p>
+            <a href="tel:+972523401960" class="btn-link btn-call" id="t-callBtn">📞 Call Now</a>
+            <a href="https://wa.me/972523401960" target="_blank" class="btn-link btn-whatsapp" id="t-waBtn">💬 Contact on WhatsApp</a>
+        </div>
+    </div>
 </div>
 
-​<!-- מסך 2: בקרת שלט והגדרות -->
-
-<div id="controlSection" class="hidden">
-
-<button class="btn-primary" onclick="connectBluetooth()" id="t-connectBt">📶 Connect Bluetooth BLE</button>
-
-​<div class="bt-status-box">
-
-<span id="btIcon">🔴</span>
-
-<span id="statusText">Bluetooth Disconnected</span>
-
-</div>
-
-​<button class="btn-settings" onclick="toggleSettings()" id="t-settingsBtn">⚙️ Settings & Language</button>
-
-​<!-- פאנל הגדרות -->
-
-<div id="settingsPanel" class="settings-panel hidden">
-
-<h4 style="margin:0 0 10px 0; color:#0284c7; text-align:center;" id="t-settingsTitle">Module & System Settings</h4>
-
-​<label id="t-langLabel">Language / שפה:</label>
-
-<select id="langSelect" onchange="changeLanguage(this.value)">
-
-<option value="en">English</option>
-
-<option value="he">עברית (Hebrew)</option>
-
-<option value="ar">العربية (Arabic)</option>
-
-<option value="es">Español (Spanish)</option>
-
-<option value="ru">Русский (Russian)</option>
-
-<option value="fr">Français (French)</option>
-
-<option value="de">Deutsch (German)</option>
-
-<option value="zh">中文 (Chinese)</option>
-
-<option value="tr">Türkçe (Turkish)</option>
-
-</select>
-
-​<label id="t-modeLabel">Transmission Protocol (Module Mode):</label>
-
-<select id="modeSelect" onchange="saveSettings()">
-
-<option value="TEXT_NL">Text with NewLine (e.g. "1\r\n")</option>
-
-<option value="RELAY_A0">Chinese 8-Relay Protocol (0xA0)</option>
-
-<option value="HEX">Simple HEX Bytes</option>
-
-</select>
-
-​<label id="t-relay5Label">Master Relay #5 Dual Trigger:</label>
-
-<select id="relay5Select" onchange="saveSettings()">
-
-<option value="true" id="t-r5Yes">YES - Trigger Relay #5 with every action</option>
-
-<option value="false" id="t-r5No">NO - Single Relay mode</option>
-
-</select>
-
-​<button class="btn-secondary" style="padding:8px; margin-top:12px; font-size:14px;" onclick="toggleSettings()" id="t-closeSettings">Close Settings</button>
-
-</div>
-
-​<hr>
-
-​<!-- גריד כפתורי שליטה (תוקן: פתח בימין, סגור בשמאל) -->
-
-<div class="remote-grid">
-
-<div class="grid-up">
-
-<button class="btn-action" id="btnUp">⬆️
-
-<span id="t-btnUp">UP</span></button>
-
-</div>
-
-​<!-- סגור - בצד שמאל -->
-
-<div class="grid-left">
-
-<button class="btn-action" id="btnLeft">⬅️
-
-<span id="t-btnLeft">CLOSE</span></button>
-
-</div>
-
-​<div class="grid-center">
-
-<span>LEVI
-
-RAMP
-
-<b id="modeDisplay">NL</b></span>
-
-</div>
-
-​<!-- פתח - בצד ימין -->
-
-<div class="grid-right">
-
-<button class="btn-action" id="btnRight">➡️
-
-<span id="t-btnRight">OPEN</span></button>
-
-</div>
-
-​<div class="grid-down">
-
-<button class="btn-action" id="btnDown">⬇️
-
-<span id="t-btnDown">DOWN</span></button>
-
-</div>
-
-</div>
-
-​<!-- לחצן עצירת חירום -->
-
-<button class="btn-emergency" onclick="triggerEmergency()" id="t-btnEmergency">🛑 <span id="t-emergencyText">EMERGENCY STOP</span></button>
-
-​<hr>
-
-​<!-- שינוי סיסמה -->
-
-<h4 id="t-changePinTitle">Change Passcode</h4>
-
-<input type="password" id="newPinInput" placeholder="New PIN (4 digits)" maxlength="8" inputmode="numeric">
-
-<button class="btn-secondary" onclick="changePin()" id="t-updatePinBtn">Update Passcode</button>
-
-​<!-- הזמנות ותמיכה -->
-
-<div class="order-box">
-
-<h4 style="margin:0 0 6px 0; color:#00e676;" id="t-supportTitle">Order & Technical Support</h4>
-
-<p style="margin-bottom: 8px; color: #e2e8f0;">Tel: +972-52-3401960</p>
-
-<a href="tel:+972523401960" class="btn-link btn-call" id="t-callBtn">📞 Call Now</a>
-
-<a href="https://wa.me/972523401960" target="_blank" class="btn-link btn-whatsapp" id="t-waBtn">💬 Contact on WhatsApp</a>
-
-</div>
-
-</div>
-
-</div>
-
-​<script>
-
-const DEFAULT_PIN = "1234";
-
-let savedPin = DEFAULT_PIN;
-
-let workMode = "TEXT_NL";
-
-let useRelay5 = true;
-
-let currentLang = "he";
-
-let activeChannel = 0;
-
-​// משתני אבטחה קריטיים
-
-let activePressedChannel = 0;
-
-let heartbeatTimer = null;
-
-​const translations = {
-
-en: {
-
-dir: "ltr",
-
-subtitle: "Hydraulic Ramp Bluetooth Remote Controller",
-
-loginTitle: "Enter Passcode",
-
-passHint: "Default Passcode: 1234",
-
-loginBtn: "🔑 Enter Remote",
-
-connectBt: "📶 Connect Bluetooth BLE",
-
-btDisconnected: "Bluetooth Disconnected",
-
-btSearching: "Searching for BLE Device...",
-
-btConnecting: "Connecting...",
-
-btConnected: "Connected Successfully!",
-
-btError: "Connection Error",
-
-settingsBtn: "⚙️ Settings & Language",
-
-settingsTitle: "Module & System Settings",
-
-langLabel: "Language / שפה:",
-
-modeLabel: "Transmission Protocol (Module Mode):",
-
-relay5Label: "Master Relay #5 Dual Trigger:",
-
-r5Yes: "YES - Trigger Relay #5 with every action",
-
-r5No: "NO - Single Relay mode",
-
-closeSettings: "Close Settings",
-
-btnUp: "UP",
-
-btnDown: "DOWN",
-
-btnLeft: "CLOSE",
-
-btnRight: "OPEN",
-
-emergencyText: "EMERGENCY STOP",
-
-changePinTitle: "Change Passcode",
-
-updatePinBtn: "Update Passcode",
-
-supportTitle: "Order & Technical Support",
-
-callBtn: "📞 Call Now",
-
-waBtn: "💬 Contact on WhatsApp",
-
-wrongPin: "Incorrect Passcode, try again",
-
-pinSuccess: "Passcode updated successfully!",
-
-pinMin: "Passcode must be at least 4 digits"
-
-},
-
-he: {
-
-dir: "rtl",
-
-subtitle: "אפליקציית שליטה בלוטוס לרמפה הידראולית",
-
-loginTitle: "הזן קוד גישה",
-
-passHint: "קוד ראשוני לברירת מחדל: 1234",
-
-loginBtn: "🔑 כנס לשלט",
-
-connectBt: "📶 התחבר לבלוטוס BLE",
-
-btDisconnected: "בלוטוס מנותק",
-
-btSearching: "מחפש התקן BLE...",
-
-btConnecting: "מתחבר...",
-
-btConnected: "מחובר בהצלחה!",
-
-btError: "שגיאה בחיבור",
-
-settingsBtn: "⚙️ הגדרות ושפה",
-
-settingsTitle: "הגדרות מודול ומערכת",
-
-langLabel: "בחירת שפה / Language:",
-
-modeLabel: "פרוטוקול שידור (מצב מודול):",
-
-relay5Label: "שילוב ממסר 5 (מאסטר):",
-
-r5Yes: "כן - הפעל ממסר 5 יחד עם כל פעולה",
-
-r5No: "לא - הפעל ממסר בודד בלבד",
-
-closeSettings: "סגור הגדרות",
-
-btnUp: "הרם",
-
-btnDown: "הורד",
-
-btnLeft: "סגור",
-
-btnRight: "פתח",
-
-emergencyText: "עצירת חירום",
-
-changePinTitle: "שינוי סיסמה אישית",
-
-updatePinBtn: "עדכן סיסמה",
-
-supportTitle: "להזמנת המוח וסיוע טכני",
-
-callBtn: "📞 חייג עכשיו",
-
-waBtn: "💬 פנה אלינו ב-WhatsApp",
-
-wrongPin: "קוד שגוי, נסה שוב",
-
-pinSuccess: "הסיסמה עודכנה בהצלחה!",
-
-pinMin: "הסיסמה חייבת להכיל לפחות 4 ספרות"
-
-}
-
-};
-
-​try {
-
-savedPin = localStorage.getItem("user_pin") || DEFAULT_PIN;
-
-workMode = localStorage.getItem("work_mode") || "TEXT_NL";
-
-useRelay5 = localStorage.getItem("use_relay5") !== "false";
-
-currentLang = localStorage.getItem("app_lang") || "he";
-
-} catch (e) {}
-
-​document.getElementById("modeSelect").value = workMode;
-
-document.getElementById("relay5Select").value = useRelay5 ? "true" : "false";
-
-document.getElementById("langSelect").value = currentLang;
-
-document.getElementById("modeDisplay").innerText = workMode === "TEXT_NL" ? "NL" : (workMode === "RELAY_A0" ? "A0" : "HEX");
-
-​function changeLanguage(lang) {
-
-if (!translations[lang]) lang = "he";
-
-currentLang = lang;
-
-const t = translations[lang];
-
-​document.body.dir = t.dir;
-
-document.getElementById("t-subtitle").innerText = t.subtitle;
-
-document.getElementById("t-loginTitle").innerText = t.loginTitle;
-
-document.getElementById("t-passHint").innerText = t.passHint;
-
-document.getElementById("t-loginBtn").innerText = t.loginBtn;
-
-document.getElementById("t-connectBt").innerText = t.connectBt;
-
-​if (!relayCharacteristic) {
-
-document.getElementById("statusText").innerText = t.btDisconnected;
-
-}
-
-​document.getElementById("t-settingsBtn").innerText = t.settingsBtn;
-
-document.getElementById("t-settingsTitle").innerText = t.settingsTitle;
-
-document.getElementById("t-langLabel").innerText = t.langLabel;
-
-document.getElementById("t-modeLabel").innerText = t.modeLabel;
-
-document.getElementById("t-relay5Label").innerText = t.relay5Label;
-
-document.getElementById("t-r5Yes").innerText = t.r5Yes;
-
-document.getElementById("t-r5No").innerText = t.r5No;
-
-document.getElementById("t-closeSettings").innerText = t.closeSettings;
-
-​document.getElementById("t-btnUp").innerText = t.btnUp;
-
-document.getElementById("t-btnDown").innerText = t.btnDown;
-
-document.getElementById("t-btnLeft").innerText = t.btnLeft;
-
-document.getElementById("t-btnRight").innerText = t.btnRight;
-
-document.getElementById("t-emergencyText").innerText = t.emergencyText;
-
-​document.getElementById("t-changePinTitle").innerText = t.changePinTitle;
-
-document.getElementById("t-updatePinBtn").innerText = t.updatePinBtn;
-
-document.getElementById("t-supportTitle").innerText = t.supportTitle;
-
-document.getElementById("t-callBtn").innerText = t.callBtn;
-
-document.getElementById("t-waBtn").innerText = t.waBtn;
-
-​try { localStorage.setItem("app_lang", lang); } catch(e) {}
-
-}
-
-​function toggleSettings() {
-
-document.getElementById("settingsPanel").classList.toggle("hidden");
-
-}
-
-​function saveSettings() {
-
-workMode = document.getElementById("modeSelect").value;
-
-useRelay5 = document.getElementById("relay5Select").value === "true";
-
-document.getElementById("modeDisplay").innerText = workMode === "TEXT_NL" ? "NL" : (workMode === "RELAY_A0" ? "A0" : "HEX");
-
-​try {
-
-localStorage.setItem("work_mode", workMode);
-
-localStorage.setItem("use_relay5", useRelay5);
-
-} catch(e) {}
-
-}
-
-​function checkPin() {
-
-const input = document.getElementById("pinInput").value;
-
-const errorDiv = document.getElementById("loginError");
-
-const t = translations[currentLang] || translations["he"];
-
-​if (input === savedPin) {
-
-document.getElementById("loginSection").classList.add("hidden");
-
-document.getElementById("controlSection").classList.remove("hidden");
-
-errorDiv.innerText = "";
-
-setupButtons();
-
-} else {
-
-errorDiv.innerText = t.wrongPin;
-
-}
-
-}
-
-​function changePin() {
-
-const newPin = document.getElementById("newPinInput").value;
-
-const t = translations[currentLang] || translations["he"];
-
-​if (newPin.length >= 4) {
-
-try { localStorage.setItem("user_pin", newPin); } catch(e) {}
-
-savedPin = newPin;
-
-alert(t.pinSuccess);
-
-document.getElementById("newPinInput").value = "";
-
-} else {
-
-alert(t.pinMin);
-
-}
-
-}
-
-​let bluetoothDevice;
-
-let relayCharacteristic;
-
-​async function connectBluetooth() {
-
-const statusText = document.getElementById("statusText");
-
-const btIcon = document.getElementById("btIcon");
-
-const t = translations[currentLang] || translations["he"];
-
-​if (!navigator.bluetooth) {
-
-alert("Please open this app in Google Chrome on Android or Desktop.");
-
-return;
-
-}
-
-​try {
-
-statusText.innerText = t.btSearching;
-
-btIcon.innerText = "🟡";
-
-​bluetoothDevice = await navigator.bluetooth.requestDevice({
-
-acceptAllDevices: true,
-
-optionalServices: [
-
-'0000ffe0-0000-1000-8000-00805f9b34fb',
-
-'00001000-0000-1000-8000-00805f9b34fb'
-
-]
-
-});
-
-​statusText.innerText = t.btConnecting;
-
-const gattServer = await bluetoothDevice.gatt.connect();
-
-​let relayService;
-
-try {
-
-relayService = await gattServer.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
-
-} catch (e) {
-
-relayService = await gattServer.getInitialService ? await gattServer.getPrimaryService('00001000-0000-1000-8000-00805f9b34fb') : await gattServer.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
-
-}
-
-​try {
-
-relayCharacteristic = await relayService.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
-
-} catch (e) {
-
-relayCharacteristic = await relayService.getCharacteristic('00001001-0000-1000-8000-00805f9b34fb');
-
-}
-
-​statusText.innerText = t.btConnected;
-
-statusText.style.color = "#00e676";
-
-btIcon.innerText = "🟢";
-
-​bluetoothDevice.addEventListener('gattserverdisconnected', () => {
-
-stopActiveChannel();
-
-statusText.innerText = translations[currentLang].btDisconnected;
-
-statusText.style.color = "#ff5252";
-
-btIcon.innerText = "🔴";
-
-relayCharacteristic = null;
-
-});
-
-} catch (error) {
-
-console.error(error);
-
-statusText.innerText = t.btError;
-
-statusText.style.color = "#ff5252";
-
-btIcon.innerText = "🔴";
-
-}
-
-}
-
-​async function sendDataPayload(payload) {
-
-if (!relayCharacteristic) return;
-
-try {
-
-await relayCharacteristic.writeValue(payload);
-
-} catch (e1) {
-
-try {
-
-await relayCharacteristic.writeValueWithoutResponse(payload);
-
-} catch (e2) {
-
-console.log("BLE Write Error:", e2);
-
-}
-
-}
-
-}
-
-​async function sendCommand(channel, state) {
-
-if (!relayCharacteristic) return;
-
-​let encoder = new TextEncoder();
-
-​if (workMode === "TEXT_NL") {
-
-let cmdStr = state === 1 ? channel.toString() + "\r\n" : "0\r\n";
-
-if (state === 1 && useRelay5 && channel !== 5) {
-
-await sendDataPayload(encoder.encode("5\r\n"));
-
-await new Promise(r => setTimeout(r, 25));
-
-cmdStr = channel.toString() + "\r\n";
-
-} else if (state === 0 && useRelay5 && activeChannel !== 0 && activeChannel !== 5) {
-
-await sendDataPayload(encoder.encode("0\r\n"));
-
-await new Promise(r => setTimeout(r, 25));
-
-cmdStr = "0\r\n";
-
-}
-
-await sendDataPayload(encoder.encode(cmdStr));
-
-if (state === 1) activeChannel = channel;
-
-else activeChannel = 0;
-
-​} else if (workMode === "RELAY_A0") {
-
-const ch = channel & 0xFF;
-
-const st = state & 0xFF;
-
-const checksum = (0xA0 + ch + st) & 0xFF;
-
-let payload = new Uint8Array([0xA0, ch, st, checksum]);
-
-​if (state === 1) {
-
-if (useRelay5 && channel !== 5) {
-
-let p5 = new Uint8Array([0xA0, 0x05, 0x01, (0xA0 + 5 + 1) & 0xFF]);
-
-await sendDataPayload(p5);
-
-await new Promise(r => setTimeout(r, 25));
-
-}
-
-activeChannel = channel;
-
-} else {
-
-if (activeChannel !== 0) {
-
-let pOff = new Uint8Array([0xA0, activeChannel, 0x00, (0xA0 + activeChannel + 0) & 0xFF]);
-
-await sendDataPayload(pOff);
-
-if (useRelay5 && activeChannel !== 5) {
-
-await new Promise(r => setTimeout(r, 25));
-
-let p5Off = new Uint8Array([0xA0, 0x05, 0x00, (0xA0 + 5 + 0) & 0xFF]);
-
-await sendDataPayload(p5Off);
-
-}
-
-activeChannel = 0;
-
-return;
-
-}
-
-}
-
-await sendDataPayload(payload);
-
-​} else {
-
-let payload = state === 1 ? new Uint8Array([channel]) : new Uint8Array([0x00]);
-
-await sendDataPayload(payload);
-
-}
-
-}
-
-​// הפסקת פעילות וכיבוי מוחלט של כל הממסרים
-
-function stopActiveChannel() {
-
-if (heartbeatTimer) {
-
-clearInterval(heartbeatTimer);
-
-heartbeatTimer = null;
-
-}
-
-​if (activePressedChannel !== 0) {
-
-const ch = activePressedChannel;
-
-activePressedChannel = 0;
-
-​// שליחה כפולה לוודא כיבוי מלא מול הבקר
-
-sendCommand(ch, 0);
-
-setTimeout(() => sendCommand(ch, 0), 40);
-
-}
-
-​document.querySelectorAll(".btn-action").forEach(b => b.classList.remove("active"));
-
-}
-
-​// עצירת חירום
-
-function triggerEmergency() {
-
-stopActiveChannel();
-
-if (relayCharacteristic) {
-
-sendCommand(0, 0);
-
-}
-
-}
-
-​function bindMomentary(btnId, channelCode) {
-
-const btn = document.getElementById(btnId);
-
-if (!btn) return;
-
-​const start = (e) => {
-
-if (e.type === 'touchstart') e.preventDefault();
-
-if (activePressedChannel === channelCode) return;
-
-​btn.classList.add("active");
-
-activePressedChannel = channelCode;
-
-​// שליחה ראשונית
-
-sendCommand(channelCode, 1);
-
-​// מנגנון Heartbeat - מונע תקיעה אם הבלוטוס מפספס פקודות
-
-clearInterval(heartbeatTimer);
-
-heartbeatTimer = setInterval(() => {
-
-if (activePressedChannel === channelCode) {
-
-sendCommand(channelCode, 1);
-
-} else {
-
-stopActiveChannel();
-
-}
-
-}, 120);
-
-};
-
-​const stop = (e) => {
-
-if (e.type === 'touchend') e.preventDefault();
-
-btn.classList.remove("active");
-
-stopActiveChannel();
-
-};
-
-​// Pointer Events
-
-btn.addEventListener("pointerdown", start);
-
-btn.addEventListener("pointerup", stop);
-
-btn.addEventListener("pointercancel", stop);
-
-btn.addEventListener("pointerleave", stop);
-
-​// Touch & Mouse גיבוי מלא
-
-btn.addEventListener("touchstart", start, { passive: false });
-
-btn.addEventListener("touchend", stop, { passive: false });
-
-btn.addEventListener("touchcancel", stop, { passive: false });
-
-btn.addEventListener("mousedown", start);
-
-btn.addEventListener("mouseup", stop);
-
-btn.addEventListener("mouseleave", stop);
-
-}
-
-​function setupButtons() {
-
-bindMomentary("btnUp", 1);
-
-bindMomentary("btnDown", 2);
-
-bindMomentary("btnRight", 3); // פתח בצד ימין (ערוץ 3)
-
-bindMomentary("btnLeft", 4);  // סגור בצד שמאל (ערוץ 4)
-
-​// הגנות ברמת המסך והאפליקציה נגד תקיעת ממסרים
-
-window.addEventListener("pointerup", stopActiveChannel);
-
-window.addEventListener("mouseup", stopActiveChannel);
-
-window.addEventListener("touchend", stopActiveChannel);
-
-window.addEventListener("touchcancel", stopActiveChannel);
-
-window.addEventListener("blur", stopActiveChannel);
-
-document.addEventListener("visibilitychange", () => {
-
-if (document.hidden) stopActiveChannel();
-
-});
-
-}
-
-​changeLanguage(currentLang);
-
+<script>
+    const DEFAULT_PIN = "1234";
+    let savedPin = DEFAULT_PIN;
+    let workMode = "TEXT_NL";
+    let useRelay5 = true;
+    let currentLang = "he";
+    let activeChannel = 0;
+
+    let activePressedChannel = 0;
+    let heartbeatTimer = null;
+
+    const translations = {
+        en: {
+            dir: "ltr",
+            subtitle: "Hydraulic Ramp Bluetooth Remote Controller",
+            loginTitle: "Enter Passcode",
+            passHint: "Default Passcode: 1234",
+            loginBtn: "🔑 Enter Remote",
+            connectBt: "📶 Connect Bluetooth BLE",
+            btDisconnected: "Bluetooth Disconnected",
+            btSearching: "Searching for BLE Device...",
+            btConnecting: "Connecting...",
+            btConnected: "Connected Successfully!",
+            btError: "Connection Error",
+            settingsBtn: "⚙️ Settings & Language",
+            settingsTitle: "Module & System Settings",
+            langLabel: "Language / שפה:",
+            modeLabel: "Transmission Protocol (Module Mode):",
+            relay5Label: "Master Relay #5 Dual Trigger:",
+            r5Yes: "YES - Trigger Relay #5 with every action",
+            r5No: "NO - Single Relay mode",
+            closeSettings: "Close Settings",
+            btnUp: "UP",
+            btnDown: "DOWN",
+            btnLeft: "CLOSE",
+            btnRight: "OPEN",
+            btnEmergency: "EMERGENCY STOP",
+            changePinTitle: "Change Passcode",
+            updatePinBtn: "Update Passcode",
+            supportTitle: "Order & Technical Support",
+            callBtn: "📞 Call Now",
+            waBtn: "💬 Contact on WhatsApp",
+            wrongPin: "Incorrect Passcode, try again",
+            pinSuccess: "Passcode updated successfully!",
+            pinMin: "Passcode must be at least 4 digits"
+        },
+        he: {
+            dir: "rtl",
+            subtitle: "אפליקציית שליטה בלוטוס לרמפה הידראולית",
+            loginTitle: "הזן קוד גישה",
+            passHint: "קוד ראשוני לברירת מחדל: 1234",
+            loginBtn: "🔑 כנס לשלט",
+            connectBt: "📶 התחבר לבלוטוס BLE",
+            btDisconnected: "בלוטוס מנותק",
+            btSearching: "מחפש התקן BLE...",
+            btConnecting: "מתחבר...",
+            btConnected: "מחובר בהצלחה!",
+            btError: "שגיאה בחיבור",
+            settingsBtn: "⚙️ הגדרות ושפה",
+            settingsTitle: "הגדרות מודול ומערכת",
+            langLabel: "בחירת שפה / Language:",
+            modeLabel: "פרוטוקול שידור (מצב מודול):",
+            relay5Label: "שילוב ממסר 5 (מאסטר):",
+            r5Yes: "כן - הפעל ממסר 5 יחד עם כל פעולה",
+            r5No: "לא - הפעל ממסר בודד בלבד",
+            closeSettings: "סגור הגדרות",
+            btnUp: "הרם",
+            btnDown: "הורד",
+            btnLeft: "סגור",
+            btnRight: "פתח",
+            btnEmergency: "עצירת חירום",
+            changePinTitle: "שינוי סיסמה אישית",
+            updatePinBtn: "עדכן סיסמה",
+            supportTitle: "להזמנת המוח וסיוע טכני",
+            callBtn: "📞 חייג עכשיו",
+            waBtn: "💬 פנה אלינו ב-WhatsApp",
+            wrongPin: "קוד שגוי, נסה שוב",
+            pinSuccess: "הסיסמה עודכנה בהצלחה!",
+            pinMin: "הסיסמה חייבת להכיל לפחות 4 ספרות"
+        }
+    };
+
+    try {
+        savedPin = localStorage.getItem("user_pin") || DEFAULT_PIN;
+        workMode = localStorage.getItem("work_mode") || "TEXT_NL";
+        useRelay5 = localStorage.getItem("use_relay5") !== "false";
+        currentLang = localStorage.getItem("app_lang") || "he";
+    } catch (e) {}
+
+    document.getElementById("modeSelect").value = workMode;
+    document.getElementById("relay5Select").value = useRelay5 ? "true" : "false";
+    document.getElementById("langSelect").value = currentLang;
+    document.getElementById("modeDisplay").innerText = workMode === "TEXT_NL" ? "NL" : (workMode === "RELAY_A0" ? "A0" : "HEX");
+
+    function changeLanguage(lang) {
+        if (!translations[lang]) lang = "he";
+        currentLang = lang;
+        const t = translations[lang];
+
+        document.body.dir = t.dir;
+        document.getElementById("t-subtitle").innerText = t.subtitle;
+        document.getElementById("t-loginTitle").innerText = t.loginTitle;
+        document.getElementById("t-passHint").innerText = t.passHint;
+        document.getElementById("t-loginBtn").innerText = t.loginBtn;
+        document.getElementById("t-connectBt").innerText = t.connectBt;
+        
+        if (!relayCharacteristic) {
+            document.getElementById("statusText").innerText = t.btDisconnected;
+        }
+
+        document.getElementById("t-settingsBtn").innerText = t.settingsBtn;
+        document.getElementById("t-settingsTitle").innerText = t.settingsTitle;
+        document.getElementById("t-langLabel").innerText = t.langLabel;
+        document.getElementById("t-modeLabel").innerText = t.modeLabel;
+        document.getElementById("t-relay5Label").innerText = t.relay5Label;
+        document.getElementById("t-r5Yes").innerText = t.r5Yes;
+        document.getElementById("t-r5No").innerText = t.r5No;
+        document.getElementById("t-closeSettings").innerText = t.closeSettings;
+        
+        document.getElementById("t-btnUp").innerText = t.btnUp;
+        document.getElementById("t-btnDown").innerText = t.btnDown;
+        document.getElementById("t-btnLeft").innerText = t.btnLeft;
+        document.getElementById("t-btnRight").innerText = t.btnRight;
+        document.getElementById("t-btnEmergency").innerText = t.btnEmergency;
+        
+        document.getElementById("t-changePinTitle").innerText = t.changePinTitle;
+        document.getElementById("t-updatePinBtn").innerText = t.updatePinBtn;
+        document.getElementById("t-supportTitle").innerText = t.supportTitle;
+        document.getElementById("t-callBtn").innerText = t.callBtn;
+        document.getElementById("t-waBtn").innerText = t.waBtn;
+
+        try { localStorage.setItem("app_lang", lang); } catch(e) {}
+    }
+
+    function toggleSettings() {
+        document.getElementById("settingsPanel").classList.toggle("hidden");
+    }
+
+    function saveSettings() {
+        workMode = document.getElementById("modeSelect").value;
+        useRelay5 = document.getElementById("relay5Select").value === "true";
+        document.getElementById("modeDisplay").innerText = workMode === "TEXT_NL" ? "NL" : (workMode === "RELAY_A0" ? "A0" : "HEX");
+        
+        try {
+            localStorage.setItem("work_mode", workMode);
+            localStorage.setItem("use_relay5", useRelay5);
+        } catch(e) {}
+    }
+
+    function checkPin() {
+        const input = document.getElementById("pinInput").value;
+        const errorDiv = document.getElementById("loginError");
+        const t = translations[currentLang] || translations["he"];
+
+        if (input === savedPin) {
+            document.getElementById("loginSection").classList.add("hidden");
+            document.getElementById("controlSection").classList.remove("hidden");
+            errorDiv.innerText = "";
+            setupButtons();
+        } else {
+            errorDiv.innerText = t.wrongPin;
+        }
+    }
+
+    function changePin() {
+        const newPin = document.getElementById("newPinInput").value;
+        const t = translations[currentLang] || translations["he"];
+
+        if (newPin.length >= 4) {
+            try { localStorage.setItem("user_pin", newPin); } catch(e) {}
+            savedPin = newPin;
+            alert(t.pinSuccess);
+            document.getElementById("newPinInput").value = "";
+        } else {
+            alert(t.pinMin);
+        }
+    }
+
+    let bluetoothDevice;
+    let relayCharacteristic;
+
+    async function connectBluetooth() {
+        const statusText = document.getElementById("statusText");
+        const btIcon = document.getElementById("btIcon");
+        const t = translations[currentLang] || translations["he"];
+        
+        if (!navigator.bluetooth) {
+            alert("Please open this app in Google Chrome on Android or Desktop.");
+            return;
+        }
+
+        try {
+            statusText.innerText = t.btSearching;
+            btIcon.innerText = "🟡";
+            
+            bluetoothDevice = await navigator.bluetooth.requestDevice({
+                acceptAllDevices: true,
+                optionalServices: [
+                    '0000ffe0-0000-1000-8000-00805f9b34fb',
+                    '00001000-0000-1000-8000-00805f9b34fb'
+                ]
+            });
+
+            statusText.innerText = t.btConnecting;
+            const gattServer = await bluetoothDevice.gatt.connect();
+            
+            let relayService;
+            try {
+                relayService = await gattServer.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
+            } catch (e) {
+                relayService = await gattServer.getInitialService ? await gattServer.getPrimaryService('00001000-0000-1000-8000-00805f9b34fb') : await gattServer.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
+            }
+
+            try {
+                relayCharacteristic = await relayService.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
+            } catch (e) {
+                relayCharacteristic = await relayService.getCharacteristic('00001001-0000-1000-8000-00805f9b34fb');
+            }
+
+            statusText.innerText = t.btConnected;
+            statusText.style.color = "#00e676";
+            btIcon.innerText = "🟢";
+
+            bluetoothDevice.addEventListener('gattserverdisconnected', () => {
+                stopActiveChannel();
+                statusText.innerText = translations[currentLang].btDisconnected;
+                statusText.style.color = "#ff5252";
+                btIcon.innerText = "🔴";
+                relayCharacteristic = null;
+            });
+        } catch (error) {
+            console.error(error);
+            statusText.innerText = t.btError;
+            statusText.style.color = "#ff5252";
+            btIcon.innerText = "🔴";
+        }
+    }
+
+    async function sendDataPayload(payload) {
+        if (!relayCharacteristic) return;
+        try {
+            await relayCharacteristic.writeValue(payload);
+        } catch (e1) {
+            try {
+                await relayCharacteristic.writeValueWithoutResponse(payload);
+            } catch (e2) {
+                console.log("BLE Write Error:", e2);
+            }
+        }
+    }
+
+    async function sendCommand(channel, state) {
+        if (!relayCharacteristic) return;
+
+        let encoder = new TextEncoder();
+        
+        if (workMode === "TEXT_NL") {
+            let cmdStr = state === 1 ? channel.toString() + "\r\n" : "0\r\n";
+            if (state === 1 && useRelay5 && channel !== 5) {
+                await sendDataPayload(encoder.encode("5\r\n"));
+                await new Promise(r => setTimeout(r, 25));
+                cmdStr = channel.toString() + "\r\n";
+            } else if (state === 0 && useRelay5 && activeChannel !== 0 && activeChannel !== 5) {
+                await sendDataPayload(encoder.encode("0\r\n"));
+                await new Promise(r => setTimeout(r, 25));
+                cmdStr = "0\r\n";
+            }
+            await sendDataPayload(encoder.encode(cmdStr));
+            if (state === 1) activeChannel = channel;
+            else activeChannel = 0;
+
+        } else if (workMode === "RELAY_A0") {
+            const ch = channel & 0xFF;
+            const st = state & 0xFF;
+            const checksum = (0xA0 + ch + st) & 0xFF;
+            let payload = new Uint8Array([0xA0, ch, st, checksum]);
+            
+            if (state === 1) {
+                if (useRelay5 && channel !== 5) {
+                    let p5 = new Uint8Array([0xA0, 0x05, 0x01, (0xA0 + 5 + 1) & 0xFF]);
+                    await sendDataPayload(p5);
+                    await new Promise(r => setTimeout(r, 25));
+                }
+                activeChannel = channel;
+            } else {
+                if (activeChannel !== 0) {
+                    let pOff = new Uint8Array([0xA0, activeChannel, 0x00, (0xA0 + activeChannel + 0) & 0xFF]);
+                    await sendDataPayload(pOff);
+                    if (useRelay5 && activeChannel !== 5) {
+                        await new Promise(r => setTimeout(r, 25));
+                        let p5Off = new Uint8Array([0xA0, 0x05, 0x00, (0xA0 + 5 + 0) & 0xFF]);
+                        await sendDataPayload(p5Off);
+                    }
+                    activeChannel = 0;
+                    return;
+                }
+            }
+            await sendDataPayload(payload);
+
+        } else {
+            let payload = state === 1 ? new Uint8Array([channel]) : new Uint8Array([0x00]);
+            await sendDataPayload(payload);
+        }
+    }
+
+    function stopActiveChannel() {
+        if (heartbeatTimer) {
+            clearInterval(heartbeatTimer);
+            heartbeatTimer = null;
+        }
+
+        if (activePressedChannel !== 0) {
+            const ch = activePressedChannel;
+            activePressedChannel = 0;
+            sendCommand(ch, 0);
+            setTimeout(() => sendCommand(ch, 0), 40);
+        }
+
+        document.querySelectorAll(".btn-action").forEach(b => b.classList.remove("active"));
+    }
+
+    function emergencyStop() {
+        stopActiveChannel();
+        if (relayCharacteristic) {
+            sendCommand(0, 0);
+        }
+    }
+
+    function bindMomentary(btnId, channelCode) {
+        const btn = document.getElementById(btnId);
+        if (!btn) return;
+
+        const start = (e) => {
+            if (e.type === 'touchstart') e.preventDefault();
+            if (activePressedChannel === channelCode) return;
+
+            btn.classList.add("active");
+            activePressedChannel = channelCode;
+            
+            sendCommand(channelCode, 1);
+
+            clearInterval(heartbeatTimer);
+            heartbeatTimer = setInterval(() => {
+                if (activePressedChannel === channelCode) {
+                    sendCommand(channelCode, 1);
+                } else {
+                    stopActiveChannel();
+                }
+            }, 120);
+        };
+
+        const stop = (e) => {
+            if (e.type === 'touchend') e.preventDefault();
+            btn.classList.remove("active");
+            stopActiveChannel();
+        };
+
+        btn.addEventListener("pointerdown", start);
+        btn.addEventListener("pointerup", stop);
+        btn.addEventListener("pointercancel", stop);
+        btn.addEventListener("pointerleave", stop);
+
+        btn.addEventListener("touchstart", start, { passive: false });
+        btn.addEventListener("touchend", stop, { passive: false });
+        btn.addEventListener("touchcancel", stop, { passive: false });
+        btn.addEventListener("mousedown", start);
+        btn.getElementById ? null : null;
+        btn.addEventListener("mouseup", stop);
+        btn.addEventListener("mouseleave", stop);
+    }
+
+    function setupButtons() {
+        bindMomentary("btnUp", 1);
+        bindMomentary("btnDown", 2);
+        
+        // btnLeft (שמאל) = סגור / CLOSE (ערוץ 4)
+        // btnRight (ימין) = פתח / OPEN (ערוץ 3)
+        bindMomentary("btnLeft", 4);
+        bindMomentary("btnRight", 3);
+
+        const emBtn = document.getElementById("btnEmergency");
+        if (emBtn) {
+            emBtn.addEventListener("click", emergencyStop);
+            emBtn.addEventListener("touchstart", (e) => { e.preventDefault(); emergencyStop(); }, { passive: false });
+        }
+
+        window.addEventListener("pointerup", stopActiveChannel);
+        window.addEventListener("mouseup", stopActiveChannel);
+        window.addEventListener("touchend", stopActiveChannel);
+        window.addEventListener("touchcancel", stopActiveChannel);
+        window.addEventListener("blur", stopActiveChannel);
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) stopActiveChannel();
+        });
+    }
+
+    changeLanguage(currentLang);
 </script>
 
-​</body>
-
+</body>
 </html>
-
