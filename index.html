@@ -2,134 +2,272 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>Levi Ramp - שליטה בממסרים</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Levi Ramp Control</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background: #222; color: white; margin: 0; padding: 20px; }
-        .screen { display: none; }
-        .active { display: block; }
-        button { padding: 15px 30px; font-size: 20px; margin: 10px; cursor: pointer; border-radius: 10px; border: none; font-weight: bold; }
-        .btn-open { background: #4CAF50; color: white; }
-        .btn-close { background: #f44336; color: white; }
-        .btn-settings { background: #ff9800; color: white; }
-        input { padding: 10px; font-size: 16px; width: 80%; max-width: 300px; margin: 10px; border-radius: 5px; border: 1px solid #ccc; text-align: center; }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background-color: #121212;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+            padding-bottom: 20px;
+        }
+        header { width: 100%; padding: 15px 0; text-align: center; background: #1e1e1e; }
+        header h1 { margin: 0; font-size: 18px; color: #ff9800; }
+        #status { font-size: 12px; color: #888; margin-top: 4px; }
+ 
+        .section { width: 320px; margin-top: 16px; }
+ 
+        /* כפתור חיבור בלוטות' */
+        .connect-btn {
+            width: 100%;
+            padding: 14px 0;
+            font-size: 15px;
+            font-weight: bold;
+            color: #fff;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .connect-btn.connected { border-color: #ff9800; color: #ff9800; }
+ 
+        /* D-Pad בסגנון שלט פלייסטיישן */
+        .dpad {
+            direction: ltr; /* מונע היפוך עמודות בגלל RTL, כך שחיצים שומרים על כיוון קבוע */
+            display: grid;
+            grid-template-columns: 100px 100px 100px;
+            grid-template-rows: 100px 100px 100px;
+            gap: 6px;
+            justify-content: center;
+        }
+        .dpad-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 10px;
+            color: #fff;
+            touch-action: none;
+        }
+        .dpad-btn .arrow { font-size: 30px; line-height: 1; color: #ff9800; }
+        .dpad-btn .txt { font-size: 12px; margin-top: 4px; color: #ccc; }
+        .dpad-btn.active { background: #3d3d3d; border-color: #ff9800; }
+ 
+        .dpad-up    { grid-column: 2; grid-row: 1; }
+        .dpad-left  { grid-column: 1; grid-row: 2; } /* סגירה - חץ שמאלה */
+        .dpad-center{ grid-column: 2; grid-row: 2; display:flex; align-items:center; justify-content:center; }
+        .dpad-center span { font-size: 10px; color: #555; }
+        .dpad-right { grid-column: 3; grid-row: 2; } /* פתיחה - חץ ימינה */
+        .dpad-down  { grid-column: 2; grid-row: 3; }
+ 
+        /* כפתור ממסר */
+        .relay-btn {
+            width: 100%;
+            padding: 16px 0;
+            font-size: 15px;
+            font-weight: bold;
+            color: #fff;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            text-align: center;
+            touch-action: none;
+        }
+        .relay-btn.active { background: #3d3d3d; border-color: #ff9800; }
+ 
+        /* כפתורי יצירת קשר */
+        .contact-row {
+            display: flex;
+            gap: 10px;
+        }
+        .contact-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 12px 0;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 8px;
+            text-decoration: none;
+            border: 1px solid #3a3a3a;
+        }
+        .contact-btn.call { background: #2a2a2a; color: #4FC3F7; }
+        .contact-btn.whatsapp { background: #2a2a2a; color: #25D366; }
+ 
+        footer { margin-top: auto; padding-top: 16px; font-size: 12px; color: #666; }
     </style>
 </head>
 <body>
-
-    <!-- מסך ראשי - שליטה -->
-    <div id="mainScreen" class="screen active">
-        <h1>Levi Ramp - שליטה בליפט</h1>
-        <p id="connectionStatus" style="color: yellow;">מנותק מבלוטוס</p>
-        
-        <br>
-        <!-- כפתורי פתיחה וסגירה (פתיחה מימין, סגירה משמאל לפי בקשתך) -->
-        <div>
-            <button class="btn-close" onclick="closeRamp()">סגירה ◀</button>
-            <button class="btn-open" onclick="openRamp()">▶ פתיחה</button>
+ 
+    <header>
+        <h1>Levi Ramp</h1>
+        <div id="status">מנותק</div>
+    </header>
+ 
+    <!-- חיבור בלוטות' -->
+    <div class="section">
+        <div id="connectBtn" class="connect-btn">חיבור Bluetooth</div>
+    </div>
+ 
+    <!-- D-Pad: עלייה / ירידה / פתיחה / סגירה -->
+    <div class="section">
+        <div class="dpad">
+            <div class="dpad-btn dpad-up" id="btn-up" data-cmd="UP_CMD" data-vibrate="1">
+                <span class="arrow">&#9650;</span>
+                <span class="txt">עלייה</span>
+            </div>
+            <div class="dpad-btn dpad-left" id="btn-close" data-cmd="CLOSE_CMD" data-vibrate="1">
+                <span class="arrow">&#9664;</span>
+                <span class="txt">סגירה</span>
+            </div>
+            <div class="dpad-center"><span>LEVI</span></div>
+            <div class="dpad-btn dpad-right" id="btn-open" data-cmd="OPEN_CMD" data-vibrate="1">
+                <span class="arrow">&#9654;</span>
+                <span class="txt">פתיחה</span>
+            </div>
+            <div class="dpad-btn dpad-down" id="btn-down" data-cmd="DOWN_CMD" data-vibrate="1">
+                <span class="arrow">&#9660;</span>
+                <span class="txt">ירידה</span>
+            </div>
         </div>
-        
-        <br><br>
-        <button class="btn-settings" onclick="showScreen('settingsScreen')">הגדרות ⚙️</button>
-        <br>
-        <button onclick="connectBluetooth()" style="background: #2196F3; color: white;">התחבר לבלוטוס</button>
     </div>
-
-    <!-- מסך הגדרות -->
-    <div id="settingsScreen" class="screen">
-        <h1>הגדרות אפליקציה</h1>
-        <p>הכנס את כתובת ה-UUID או נתוני החיבור:</p>
-        <input type="text" id="serviceUuidInput" placeholder="Service UUID" value="0000ffe0-0000-1000-8000-00805f9b34fb">
-        <br>
-        <input type="text" id="charUuidInput" placeholder="Characteristic UUID" value="0000ffe1-0000-1000-8000-00805f9b34fb">
-        <br><br>
-        <button onclick="saveSettings()" style="background: #4CAF50; color: white;">שמור וחזור</button>
-        <br>
-        <button onclick="showScreen('mainScreen')" style="background: #666; color: white;">חזור בלי לשמור</button>
+ 
+    <!-- ממסר ראשי -->
+    <div class="section">
+        <div id="btn-relay5" class="relay-btn" data-cmd="RELAY5_CMD">ממסר ראשי #5</div>
     </div>
-
-<script>
-    let bluetoothDevice;
-    let bluetoothCharacteristic;
-
-    // מעבר בין מסכים
-    function showScreen(screenId) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(screenId).classList.add('active');
-    }
-
-    // שמירת הגדרות
-    function saveSettings() {
-        const serviceUuid = document.getElementById('serviceUuidInput').value;
-        const charUuid = document.getElementById('charUuidInput').value;
+ 
+    <!-- יצירת קשר עם המפתח -->
+    <div class="section contact-row">
+        <a class="contact-btn call" href="tel:0523401960">&#128222; התקשרות לאריק לוי</a>
+        <a class="contact-btn whatsapp" href="https://wa.me/972523401960" target="_blank" rel="noopener">&#128172; וואטסאפ</a>
+    </div>
+ 
+    <footer>אריק לוי | 052-3401960</footer>
+ 
+    <script>
+        const statusEl = document.getElementById('status');
+        const connectBtn = document.getElementById('connectBtn');
+ 
+        let isConnected = false;
+        let bleChar = null;
         
-        localStorage.setItem('serviceUuid', serviceUuid);
-        localStorage.setItem('charUuid', charUuid);
-        
-        alert('ההגדרות נשמרו בהצלחה!');
-        showScreen('mainScreen');
-    }
+        // משתנים לתור שליחה כדי למנוע התנגשויות (GATT errors)
+        let isSending = false;
+        let sendQueue = [];
+ 
+        const commandButtons = [
+            document.getElementById('btn-up'),
+            document.getElementById('btn-down'),
+            document.getElementById('btn-open'),
+            document.getElementById('btn-close'),
+            document.getElementById('btn-relay5')
+        ];
+ 
+        async function connect() {
+            try {
+                const device = await navigator.bluetooth.requestDevice({
+                    filters: [{services: ['0000ffe0-0000-1000-8000-00805f9b34fb']}]
+                });
+                const server = await device.gatt.connect();
+                const service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
+                bleChar = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
+                
+                // הוספת האזנה לניתוק
+                device.addEventListener('gattserverdisconnected', () => {
+                    isConnected = false;
+                    statusEl.innerText = 'מנותק';
+                    connectBtn.classList.remove('connected');
+                    bleChar = null;
+                });
 
-    // טעינת הגדרות שמורות בהפעלה
-    window.onload = function() {
-        if(localStorage.getItem('serviceUuid')) {
-            document.getElementById('serviceUuidInput').value = localStorage.getItem('serviceUuid');
-            document.getElementById('charUuidInput').value = localStorage.getItem('charUuid');
+                isConnected = true;
+                statusEl.innerText = 'מחובר!';
+                connectBtn.classList.add('connected');
+            } catch(e) { statusEl.innerText = 'שגיאת חיבור'; }
         }
-    };
+ 
+        // פונקציה לעיבוד תור הפקודות כדי שלא יתנגשו
+        async function processQueue() {
+            if (isSending || sendQueue.length === 0 || !isConnected || !bleChar) return;
+            
+            isSending = true;
+            const data = sendQueue.shift();
+            
+            try {
+                if (bleChar.writeValueWithoutResponse) {
+                    await bleChar.writeValueWithoutResponse(data);
+                } else {
+                    await bleChar.writeValue(data);
+                }
+            } catch (e1) {
+                try {
+                    if (bleChar.writeValue) {
+                        await bleChar.writeValue(data);
+                    }
+                } catch (e2) {
+                    statusEl.innerText = 'שגיאת שליחה: ' + (e2.message || e2);
+                }
+            }
+            
+            isSending = false;
+            // קריאה רקורסיבית לעיבוד הפקודה הבאה בתור (אם יש כזו)
+            processQueue();
+        }
 
-    // חיבור בלוטוס
-    async function connectBluetooth() {
-        try {
-            const serviceUuid = localStorage.getItem('serviceUuid') || '0000ffe0-0000-1000-8000-00805f9b34fb';
-            const charUuid = localStorage.getItem('charUuid') || '0000ffe1-0000-1000-8000-00805f9b34fb';
-
-            console.log("מחפש התקן בלוטוס...");
-            bluetoothDevice = await navigator.bluetooth.requestDevice({
-                acceptAllDevices: true,
-                optionalServices: [serviceUuid]
+        function send(cmd, state) {
+            if(!isConnected || !bleChar) return;
+            
+            // הוספת ירידת שורה (\r\n) בסוף הפקודה - חובה כדי שהמוח יפענח את הפקודה
+            const msg = cmd + '_' + state + '\r\n';
+            const data = new TextEncoder().encode(msg);
+            
+            // דחיפה לתור וקריאה לעיבוד
+            sendQueue.push(data);
+            processQueue();
+        }
+ 
+        function vibrate() {
+            if (navigator.vibrate) navigator.vibrate(40);
+        }
+ 
+        connectBtn.addEventListener('click', connect);
+ 
+        commandButtons.forEach(btn => {
+            const cmd = btn.dataset.cmd;
+            const shouldVibrate = btn.dataset.vibrate === '1';
+ 
+            btn.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                if (shouldVibrate) vibrate();
+                btn.classList.add('active');
+                send(cmd, 'ON');
             });
-
-            const server = await bluetoothDevice.gatt.connect();
-            const service = await server.getPrimaryService(serviceUuid);
-            bluetoothCharacteristic = await service.getCharacteristic(charUuid);
-
-            document.getElementById('connectionStatusinnerText' || 'connectionStatus').innerText = "מחובר בהצלחה! 🟢";
-            document.getElementById('connectionStatus').style.color = "#4CAF50";
-            alert("הבלוטוס מחובר בהצלחה ללוח!");
-        } catch (error) {
-            console.error("שגיאה בחיבור:", error);
-            alert("החיבור נכשל: " + error);
-        }
-    }
-
-    // פונקציה לשליחת פקודות Hex לממסרים (כדי שהם באמת ייפתחו!)
-    async function sendHexCommand(hexArray) {
-        if (!bluetoothCharacteristic) {
-            alert("הלוח לא מחובר בבלוטוס! נא להתחבר קודם.");
-            return;
-        }
-        try {
-            const data = new Uint8Array(hexArray);
-            await bluetoothCharacteristic.writeValue(data);
-            console.log("הפקודה נשלחה:", hexArray);
-        } catch (error) {
-            console.error("שגיאה בשליחת פקודה לממסר:", error);
-            alert("שגיאה בשליחת הנתונים לממסר");
-        }
-    }
-
-    // פתיחה (שליחת פקודה לממסר 1 למשל - אפשר לשנות את הקוד הקסדצימלי לפי הלוח)
-    function openRamp() {
-        // קוד Hex נפוץ להפעלת ממסר 1 בלוחות ממסרים רגילים
-        sendHexCommand([0xA0, 0x01, 0x01, 0xA2]);
-    }
-
-    // סגירה (שליחת פקודה לממסר 2)
-    function closeRamp() {
-        // קוד Hex נפוץ להפעלת ממסר 2 בלוחות ממסרים רגילים
-        sendHexCommand([0xA0, 0x02, 0x01, 0xA3]);
-    }
-</script>
-
+ 
+            const release = () => {
+                if (btn.classList.contains('active')) {
+                    btn.classList.remove('active');
+                    send(cmd, 'OFF');
+                }
+            };
+ 
+            btn.addEventListener('pointerup', release);
+            btn.addEventListener('pointerleave', release);
+            btn.addEventListener('pointercancel', release);
+        });
+    </script>
 </body>
 </html>
