@@ -22,11 +22,11 @@
         }
         header { width: 100%; padding: 15px 0; text-align: center; background: #1e1e1e; }
         header h1 { margin: 0; font-size: 18px; color: #ff9800; }
-        #status { font-size: 12px; color: #888; margin-top: 4px; }
+        #status { font-size: 12px; color: #888; margin-top: 4px; padding: 0 10px; word-wrap: break-word; }
+        .error-text { color: #ff5252 !important; font-weight: bold; }
  
         .section { width: 320px; margin-top: 16px; }
  
-        /* כפתור חיבור בלוטות' */
         .connect-btn {
             width: 100%;
             padding: 14px 0;
@@ -40,9 +40,8 @@
         }
         .connect-btn.connected { border-color: #ff9800; color: #ff9800; }
  
-        /* D-Pad בסגנון שלט פלייסטיישן */
         .dpad {
-            direction: ltr; /* מונע היפוך עמודות בגלל RTL, כך שחיצים שומרים על כיוון קבוע */
+            direction: ltr;
             display: grid;
             grid-template-columns: 100px 100px 100px;
             grid-template-rows: 100px 100px 100px;
@@ -65,13 +64,12 @@
         .dpad-btn.active { background: #3d3d3d; border-color: #ff9800; }
  
         .dpad-up    { grid-column: 2; grid-row: 1; }
-        .dpad-left  { grid-column: 1; grid-row: 2; } /* סגירה - חץ שמאלה */
+        .dpad-left  { grid-column: 1; grid-row: 2; }
         .dpad-center{ grid-column: 2; grid-row: 2; display:flex; align-items:center; justify-content:center; }
         .dpad-center span { font-size: 10px; color: #555; }
-        .dpad-right { grid-column: 3; grid-row: 2; } /* פתיחה - חץ ימינה */
+        .dpad-right { grid-column: 3; grid-row: 2; }
         .dpad-down  { grid-column: 2; grid-row: 3; }
  
-        /* כפתור ממסר */
         .relay-btn {
             width: 100%;
             padding: 16px 0;
@@ -86,23 +84,11 @@
         }
         .relay-btn.active { background: #3d3d3d; border-color: #ff9800; }
  
-        /* כפתורי יצירת קשר */
-        .contact-row {
-            display: flex;
-            gap: 10px;
-        }
+        .contact-row { display: flex; gap: 10px; }
         .contact-btn {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            padding: 12px 0;
-            font-size: 14px;
-            font-weight: bold;
-            border-radius: 8px;
-            text-decoration: none;
-            border: 1px solid #3a3a3a;
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            gap: 6px; padding: 12px 0; font-size: 14px; font-weight: bold;
+            border-radius: 8px; text-decoration: none; border: 1px solid #3a3a3a;
         }
         .contact-btn.call { background: #2a2a2a; color: #4FC3F7; }
         .contact-btn.whatsapp { background: #2a2a2a; color: #25D366; }
@@ -117,12 +103,10 @@
         <div id="status">מנותק</div>
     </header>
  
-    <!-- חיבור בלוטות' -->
     <div class="section">
         <div id="connectBtn" class="connect-btn">חיבור Bluetooth</div>
     </div>
  
-    <!-- D-Pad: עלייה / ירידה / פתיחה / סגירה -->
     <div class="section">
         <div class="dpad">
             <div class="dpad-btn dpad-up" id="btn-up" data-cmd="UP_CMD" data-vibrate="1">
@@ -145,15 +129,13 @@
         </div>
     </div>
  
-    <!-- ממסר ראשי -->
     <div class="section">
         <div id="btn-relay5" class="relay-btn" data-cmd="RELAY5_CMD">ממסר ראשי #5</div>
     </div>
  
-    <!-- יצירת קשר עם המפתח -->
     <div class="section contact-row">
-        <a class="contact-btn call" href="tel:0523401960">&#128222; התקשרות לאריק לוי</a>
-        <a class="contact-btn whatsapp" href="https://wa.me/972523401960" target="_blank" rel="noopener">&#128172; וואטסאפ</a>
+        <a class="contact-btn call" href="tel:0523401960">&#128222; התקשרות</a>
+        <a class="contact-btn whatsapp" href="https://wa.me/972523401960" target="_blank">&#128172; וואטסאפ</a>
     </div>
  
     <footer>אריק לוי | 052-3401960</footer>
@@ -164,8 +146,6 @@
  
         let isConnected = false;
         let bleChar = null;
-        
-        // משתנים לתור שליחה כדי למנוע התנגשויות (GATT errors)
         let isSending = false;
         let sendQueue = [];
  
@@ -177,8 +157,19 @@
             document.getElementById('btn-relay5')
         ];
  
+        function showError(msg) {
+            statusEl.innerText = msg;
+            statusEl.classList.add('error-text');
+        }
+
+        function showStatus(msg) {
+            statusEl.innerText = msg;
+            statusEl.classList.remove('error-text');
+        }
+
         async function connect() {
             try {
+                showStatus('מתחבר...');
                 const device = await navigator.bluetooth.requestDevice({
                     filters: [{services: ['0000ffe0-0000-1000-8000-00805f9b34fb']}]
                 });
@@ -186,21 +177,21 @@
                 const service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
                 bleChar = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
                 
-                // הוספת האזנה לניתוק
                 device.addEventListener('gattserverdisconnected', () => {
                     isConnected = false;
-                    statusEl.innerText = 'מנותק';
+                    showError('החיבור נותק מהמכשיר');
                     connectBtn.classList.remove('connected');
                     bleChar = null;
                 });
 
                 isConnected = true;
-                statusEl.innerText = 'מחובר!';
+                showStatus('מחובר בהצלחה!');
                 connectBtn.classList.add('connected');
-            } catch(e) { statusEl.innerText = 'שגיאת חיבור'; }
+            } catch(e) { 
+                showError('שגיאת חיבור: ' + e.message); 
+            }
         }
  
-        // פונקציה לעיבוד תור הפקודות כדי שלא יתנגשו
         async function processQueue() {
             if (isSending || sendQueue.length === 0 || !isConnected || !bleChar) return;
             
@@ -208,6 +199,7 @@
             const data = sendQueue.shift();
             
             try {
+                // ננסה קודם את השיטה שמתאימה לרוב מודולי הבלוטות' הסיניים (HM-10)
                 if (bleChar.writeValueWithoutResponse) {
                     await bleChar.writeValueWithoutResponse(data);
                 } else {
@@ -215,27 +207,27 @@
                 }
             } catch (e1) {
                 try {
-                    if (bleChar.writeValue) {
-                        await bleChar.writeValue(data);
-                    }
+                    await bleChar.writeValue(data);
                 } catch (e2) {
-                    statusEl.innerText = 'שגיאת שליחה: ' + (e2.message || e2);
+                    showError('שגיאה בשליחה: ' + e2.message);
                 }
             }
             
             isSending = false;
-            // קריאה רקורסיבית לעיבוד הפקודה הבאה בתור (אם יש כזו)
             processQueue();
         }
 
         function send(cmd, state) {
-            if(!isConnected || !bleChar) return;
+            if(!isConnected) {
+                showError('יש להתחבר לבלוטות׳ תחילה');
+                return;
+            }
+            if(!bleChar) return;
             
-            // הוספת ירידת שורה (\r\n) בסוף הפקודה - חובה כדי שהמוח יפענח את הפקודה
-            const msg = cmd + '_' + state + '\r\n';
+            // שליחת הפקודה בדיוק כפי שהייתה בקוד המקורי שלך, ללא תוספות
+            const msg = cmd + '_' + state;
             const data = new TextEncoder().encode(msg);
             
-            // דחיפה לתור וקריאה לעיבוד
             sendQueue.push(data);
             processQueue();
         }
