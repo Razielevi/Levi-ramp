@@ -2,9 +2,15 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Levi Ramp - Master Controller</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Levi Ramp</title>
     <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
         body {
             background-color: #121212;
             color: #ffffff;
@@ -14,92 +20,71 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
             min-height: 100vh;
         }
-        h2 {
-            color: #ffb300;
-            margin-bottom: 5px;
+        h1 {
+            color: #ffc107;
+            margin: 10px 0;
+            font-size: 28px;
             text-align: center;
         }
-        #status {
+        .status-box {
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 10px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            margin-bottom: 15px;
+            background: #1e1e1e;
+        }
+        .status-text {
+            color: #4caf50;
+            font-weight: bold;
             font-size: 14px;
-            color: #00e676;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        /* קנבס ראשי לציור ממשק מותאם אישית אם נדרש */
-        #appCanvas {
-            background-color: #1a1a1a;
-            border: 2px solid #333;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            margin-bottom: 5px;
         }
         .btn-main {
-            width: 90%;
-            max-width: 350px;
-            padding: 15px;
-            margin: 8px 0;
             background-color: #1e1e1e;
-            border: 2px solid #ffb300;
-            color: #ffb300;
+            color: #ffc107;
+            border: 2px solid #ffc107;
+            padding: 12px;
+            border-radius: 10px;
             font-size: 16px;
             font-weight: bold;
-            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
             cursor: pointer;
+            margin-bottom: 10px;
             text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
         .btn-main:active {
-            background-color: #ffb300;
+            background-color: #ffc107;
             color: #121212;
         }
-        /* פס הגדרות מערכת */
-        .settings-bar {
-            width: 90%;
-            max-width: 350px;
-            padding: 12px;
-            margin: 8px 0 15px 0;
-            background-color: #1e1e1e;
-            border: 1px solid #444;
-            color: #ffffff;
-            font-size: 15px;
-            border-radius: 12px;
-            cursor: pointer;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-        .settings-bar:active {
-            background-color: #2c2c2c;
-        }
-        /* ג'ויסטיק עגול לשלט טלוויזיה */
-        .joystick {
-            width: 280px;
-            height: 280px;
+        .joystick-container {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            background: #1a1a1a;
             border-radius: 50%;
-            background: #1e1e1e;
-            border: 4px solid #333;
-            display: grid;
-            grid-template-areas: 
-                ". up ." 
-                "left center right" 
-                ". down .";
+            border: 3px solid #333;
+            display: flex;
+            justify-content: center;
             align-items: center;
-            justify-items: center;
-            padding: 20px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
-            margin: 10px 0;
+            margin-top: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
-        .j-btn {
-            width: 70px;
-            height: 70px;
-            background: #2c2c2c;
-            border: 2px solid #444;
-            color: #ffffff;
+        .control-btn {
+            position: absolute;
+            width: 80px;
+            height: 80px;
             border-radius: 15px;
-            font-size: 16px;
+            border: 2px solid #555;
+            background: #2c2c2c;
+            color: white;
             font-weight: bold;
+            font-size: 14px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -107,229 +92,206 @@
             cursor: pointer;
             transition: 0.1s;
         }
-        .j-btn:active {
-            background-color: #ffb300;
+        .control-btn:active, .control-btn.active {
+            background: #ffc107;
             color: #121212;
             border-color: #fff;
         }
-        .stop-btn {
-            background: #331111;
-            border-color: #ff4444;
-            color: #ff4444;
-            font-size: 12px;
-        }
-        .stop-btn:active {
-            background: #ff4444;
-            color: #fff;
-        }
-        .arrow {
-            font-size: 20px;
-            margin-bottom: 2px;
-        }
-        /* כפתור וואטסאפ להזמנות בתחתית */
-        .contact-btn {
-            width: 90%;
-            max-width: 350px;
-            padding: 15px;
-            margin-top: 15px;
-            background-color: #00e676;
-            color: #000000;
+        #btn-up { top: 15px; left: 120px; border-color: #ffc107; }
+        #btn-down { bottom: 15px; left: 120px; border-color: #ffc107; }
+        #btn-open { right: 15px; top: 120px; border-color: #2196F3; } /* ממסר 1 - ימין */
+        #btn-close { left: 15px; top: 120px; border-color: #FF5722; } /* ממסר 2 - שמאל */
+        #btn-stop {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            background: #d32f2f;
+            border: 2px solid #ff8a80;
+            color: white;
             font-size: 16px;
             font-weight: bold;
-            border-radius: 12px;
             cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            display: block;
+            z-index: 2;
         }
-        .brand {
-            font-size: 11px;
-            color: #666;
-            letter-spacing: 2px;
-            margin: 15px 0;
+        #btn-stop:active {
+            background: #ff5252;
+        }
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        .modal-content {
+            background: #222;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 350px;
+            border: 2px solid #ffc107;
+            text-align: right;
+        }
+        .modal-content select, .modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 5px;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #777;
             text-align: center;
         }
     </style>
 </head>
 <body>
 
-    <h2>Levi Ramp</h2>
-    <div id="status">מחפש חיבור Bluetooth...</div>
-
-    <!-- קנבס לניהול וציור גרפיקות דינמיות של המערכת -->
-    <canvas id="appCanvas" width="320" height="80"></canvas>
-
-    <!-- חיבור Bluetooth -->
-    <div class="btn-main" onclick="connectBluetooth()">
-        חיבור Bluetooth
+    <h1>Levi Ramp</h1>
+    
+    <div class="status-box">
+        <div id="status-display" class="status-text">ממתין לחיבור בלוטות'...</div>
+        <div style="font-size: 12px; color: #aaa;" id="pin-status">Security PIN: נעול</div>
     </div>
 
-    <!-- הגדרות (שפות והתאמת מודולים/ממסרים) -->
-    <div class="settings-bar" onclick="openSettingsMenu()">
-        ⚙️ הגדרות מערכת (שפות / מודולים)
-    </div>
+    <button class="btn-main" onclick="toggleConnection()">חיבור Bluetooth</button>
+    <button class="btn-main" onclick="openSettings()">⚙️ הגדרות מערכת (שפות / מודולים)</button>
 
-    <!-- ג'ויסטיק עגול לשליטה מלאה בלי תקיעות ממסרים -->
-    <div class="joystick">
-        <!-- עליה (למעלה) -> ממסר 1 -->
-        <div class="j-btn" style="grid-area: up;" onclick="sendSafeCommand('UP')">
-            <span class="arrow" style="color: #ffb300;">▲</span>
-            עליה
+    <div class="joystick-container">
+        <div class="control-btn" id="btn-up" ontouchstart="sendCommand('UP')" onmousedown="sendCommand('UP')">
+            <span>▲</span>עליה
         </div>
-
-        <!-- סגירה (שמאל) -> ממסר 3 -->
-        <div class="j-btn" style="grid-area: left;" onclick="sendSafeCommand('CLOSE')">
-            <span class="arrow" style="color: #ffb300;">◄</span>
-            סגירה
+        <div class="control-btn" id="btn-open" ontouchstart="sendCommand('OPEN')" onmousedown="sendCommand('OPEN')">
+            <span>▶</span>פתיחה
         </div>
-
-        <!-- עצירת חירום למניעת תקיעות ממסרים (מרכז) -->
-        <div class="j-btn stop-btn" style="grid-area: center;" onclick="emergencyStopAll()">
-            STOP
+        <button id="btn-stop" onclick="sendCommand('STOP')">STOP</button>
+        <div class="control-btn" id="btn-close" ontouchstart="sendCommand('CLOSE')" onmousedown="sendCommand('CLOSE')">
+            <span>◀</span>סגירה
         </div>
-
-        <!-- פתיחה (ימין) -> ממסר 2 -->
-        <div class="j-btn" style="grid-area: right;" onclick="sendSafeCommand('OPEN')">
-            <span class="arrow" style="color: #ffb300;">▶</span>
-            פתיחה
-        </div>
-
-        <!-- ירידה (למטה) -> ממסר 4 -->
-        <div class="j-btn" style="grid-area: down;" onclick="sendSafeCommand('DOWN')">
-            <span class="arrow" style="color: #ffb300;">▼</span>
-            ירידה
+        <div class="control-btn" id="btn-down" ontouchstart="sendCommand('DOWN')" onmousedown="sendCommand('DOWN')">
+            <span>▼</span>ירידה
         </div>
     </div>
 
-    <div class="brand">LEVI RAMP - PROFESSIONAL SYSTEM</div>
+    <!-- מודאל הגדרות -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <h3 style="color: #ffc107; margin-top:0;">הגדרות מערכת</h3>
+            
+            <label>בחר שפה:</label>
+            <select id="lang-select" onchange="changeLanguage()">
+                <option value="he">עברית</option>
+                <option value="en">English</option>
+                <option value="ru">Русский</option>
+                <option value="ar">العربية</option>
+            </select>
 
-    <!-- כפתור יצירת קשר והזמנות בוואטסאפ (במקום ממסר 5) -->
-    <a href="https://wa.me/972500000000?text=שלום%20אריק,%20אני מעוניין בהזמנת מערכת%20Levi%20Ramp" class="contact-btn" target="_blank">
-        💬 הזמנות / יצירת קשר עם אריק לווי
-    </a>
+            <label>בחר סוג מודול בלוטות':</label>
+            <select id="module-select">
+                <option value="auto">זיהוי אוטומטי (Auto)</option>
+                <option value="HM10">HM-10 / AT-09 (CC2541)</option>
+                <option value="JDY">JDY-08 / JDY-16</option>
+                <option value="ESP32">ESP32 / ESP8266 BLE</option>
+                <option value="GENERIC">גנרי / אחר (Generic BLE)</option>
+            </select>
+
+            <button class="btn-main" style="margin-top: 15px;" onclick="closeSettings()">שמור וסגור</button>
+        </div>
+    </div>
+
+    <div class="footer">
+        LEVI RAMP - PROFESSIONAL SYSTEM<br>
+        אריק לוי
+    </div>
 
     <script>
-        // משתני ניהול תקשורת והגנה
-        let bleDevice = null;
-        let bleCharacteristic = null;
-        let isProcessingCommand = false; // מנגנון מניעת הצפת ממסרים ("לחיצות פסנתר")
-        let securityPin = "1960"; // קוד האבטחה המוגדר למערכת
+        let bluetoothDevice;
+        let bluetoothServer;
+        let bleCharacteristic;
 
-        // אתחול קנבס וציור אלמנטים ויזואליים של המערכת
-        window.onload = function() {
-            const canvas = document.getElementById('appCanvas');
-            if (canvas.getContext) {
-                const ctx = canvas.getContext('2d');
-                
-                // ציור רקע טכנולוגי בקנבס
-                ctx.fillStyle = "#161616";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
-                // מסגרת עדינה
-                ctx.strokeStyle = "#ffb300";
-                ctx.lineWidth = 1;
-                ctx.strokeRect(5, 5, canvas.width - 10, canvas.height - 10);
-                
-                // כתיבת טקסט סטטוס מערכת בתוך הקנבס
-                ctx.fillStyle = "#ffb300";
-                ctx.font = "bold 14px Arial";
-                ctx.textAlign = "center";
-                ctx.fillText("MODBUS / BLE RELAY SYSTEM ACTIVE", canvas.width / 2, 35);
-                
-                ctx.fillStyle = "#00e676";
-                ctx.font = "12px Arial";
-                ctx.fillText("Security PIN: Locked", canvas.width / 2, 58);
-            }
+        // UUIDs נפוצים למודולים
+        const BLE_UUID = {
+            service: '0000ffe0-0000-1000-8000-00805f9b34fb',
+            characteristic: '0000ffe1-0000-1000-8000-00805f9b34fb'
         };
 
-        // התחברות למודל ה-Bluetooth Low Energy
-        async function connectBluetooth() {
+        function updateStatus(text, isConnected = false) {
+            const display = document.getElementById('status-display');
+            display.innerText = text;
+            display.style.color = isConnected ? '#4caf50' : '#ff9800';
+        }
+
+        async function toggleConnection() {
+            const selectedModule = document.getElementById('module-select').value;
             try {
-                document.getElementById('status').innerText = "מחפש התקנים בקרבת מקום...";
-                bleDevice = await navigator.bluetooth.requestDevice({
-                    acceptAllDevices: true,
-                    optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb']
-                });
+                updateStatus("מחפש התקני בלוטות'...");
                 
-                const server = await bleDevice.gatt.connect();
-                const service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
-                bleCharacteristic = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
+                let options = { acceptAllDevices: true };
+                if (selectedModule !== 'GENERIC') {
+                    options = {
+                        filters: [{ services: [BLE_UUID.service] }],
+                        optionalServices: [BLE_UUID.service]
+                    };
+                }
+
+                bluetoothDevice = await navigator.bluetooth.requestDevice(options);
+                bluetoothServer = await bluetoothDevice.gatt.connect();
                 
-                document.getElementById('status').innerText = "מחובר בהצלחה למערכת הרמפה!";
-                document.getElementById('status').style.color = "#00e676";
+                const service = await bluetoothServer.getPrimaryService(BLE_UUID.service);
+                bleCharacteristic = await service.getCharacteristic(BLE_UUID.characteristic);
+                
+                updateStatus("מחובר בהצלחה למערכת הרמפה!", true);
             } catch (error) {
-                console.log('Bluetooth connection error:', error);
-                document.getElementById('status').innerText = "מצב סימולציה / לא נמצא בקר פיזי";
+                console.log('Connection failed: ', error);
+                updateStatus("החיבור נכשל או בוטל.");
             }
         }
 
-        // שליחת פקודה בטוחה המונעת תקיעה או הישארות ממסר פתוח
-        async function sendSafeCommand(commandType) {
-            if (isProcessingCommand) {
-                console.log("Ignored rapid click to protect relays.");
-                return; // מונע לחלוטין את בעיית התקיעה בלחיצות מהירות כמו פסנתר
+        function sendCommand(action) {
+            // מיפוי ממסרים:
+            // OPEN = ממסר 1 (פתיחה - ימין)
+            // CLOSE = ממסר 2 (סגירה - שמאל)
+            // UP = ממסר 3 (למעלה)
+            // DOWN = ממסר 4 (למטה)
+            let cmd = '';
+            switch(action) {
+                case 'OPEN': cmd = 'RELAY_1_ON'; break;
+                case 'CLOSE': cmd = 'RELAY_2_ON'; break;
+                case 'UP': cmd = 'RELAY_3_ON'; break;
+                case 'DOWN': cmd = 'RELAY_4_ON'; break;
+                case 'STOP': cmd = 'STOP_ALL'; break;
             }
-
-            isProcessingCommand = true;
-            console.log("Sending command: " + commandType);
-
-            try {
-                if (bleCharacteristic) {
-                    const encoder = new TextEncoder();
-                    await bleCharacteristic.writeValue(encoder.encode(commandType));
-                }
-            } catch (err) {
-                console.log("Write error:", err);
-            }
-
-            // השהיה מבוקרת (Debounce) שמונעת התנגשות זרמים בממסרים
-            await new Promise(resolve => setTimeout(resolve, 200));
             
-            isProcessingCommand = false;
+            console.WriteLine?.(cmd);
+            if (bleCharacteristic) {
+                const encoder = new TextEncoder();
+                bleCharacteristic.writeValue(encoder.encode(cmd));
+            }
         }
 
-        // עצירת חירום לניתוק גורף של כל הממסרים 1 עד 4
-        async function emergencyStopAll() {
-            isProcessingCommand = true;
-            console.log("EMERGENCY STOP: Clearing all relays.");
-            
-            try {
-                if (bleCharacteristic) {
-                    const encoder = new TextEncoder();
-                    await bleCharacteristic.writeValue(encoder.encode("STOP_ALL_RELAYS"));
-                }
-            } catch (err) {
-                console.log("Emergency stop error:", err);
-            }
-
-            alert("עצירת חירום הופעלה: כל הממסרים נוקו ונותקו בבטחה!");
-            setTimeout(() => {
-                isProcessingCommand = false;
-            }, 300);
+        function openSettings() {
+            document.getElementById('settings-modal').style.display = 'flex';
         }
 
-        // תפריט הגדרות מורחב (שפה, ניהול ממסרים למודולים, אבטחה)
-        function openSettingsMenu() {
-            let pinInput = prompt("הכנס קוד אבטחה למערכת (ברירת מחדל 1960):");
-            if (pinInput !== securityPin) {
-                if (pinInput !== null) alert("קוד שגוי!");
-                return;
-            }
+        function closeSettings() {
+            document.getElementById('settings-modal').style.display = 'none';
+        }
 
-            let choice = prompt("תפריט הגדרות Levi Ramp:\n1. שינוי שפה (עברית, English, Русский, العربية)\n2. הצגת מיפוי מודולים וממסרים\n\nבחר אפשרות (1 או 2):", "1");
-            
-            if (choice === "1") {
-                let lang = prompt("בחר שפה מעודכנת (he / en / ru / ar):", "he");
-                if (lang) {
-                    alert("השפה שונתה בהצלחה.");
-                }
-            } else if (choice === "2") {
-                alert("מיפוי ממסרים נוכחי:\n- ממסר 1 = עליה\n- ממסר 2 = פתיחה (מימין)\n- ממסר 3 = סגירה (משמאל)\n- ממסר 4 = ירידה\n*(ממסר 5 הוסר לחלוטין כפי שביקשת).*");
-            }
+        function changeLanguage() {
+            const lang = document.getElementById('lang-select').value;
+            // אפשר להרחיב תרגומים כאן בהמשך לפי הצורך
         }
     </script>
-
 </body>
 </html>
+
+
+
 
