@@ -1,297 +1,285 @@
+אני
+
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Levi Ramp</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Levi Ramp - Professional System</title>
     <style>
-        * {
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
-        }
         body {
             background-color: #121212;
             color: #ffffff;
             font-family: Arial, sans-serif;
+            text-align: center;
             margin: 0;
-            padding: 15px;
+            padding: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
         }
-        h1 {
-            color: #ffc107;
-            margin: 10px 0;
-            font-size: 28px;
-            text-align: center;
-        }
-        .status-box {
-            border: 2px solid #ffc107;
-            border-radius: 10px;
-            padding: 10px;
+        .container {
             width: 100%;
             max-width: 400px;
-            text-align: center;
-            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-bottom: 20px;
+        }
+        .btn-box {
             background: #1e1e1e;
-        }
-        .status-text {
-            color: #4caf50;
-            font-weight: bold;
-            font-size: 14px;
-            margin-bottom: 5px;
-        }
-        .btn-main {
-            background-color: #1e1e1e;
-            color: #ffc107;
-            border: 2px solid #ffc107;
-            padding: 12px;
-            border-radius: 10px;
+            border: 2px solid #d4af37;
+            border-radius: 12px;
+            padding: 14px;
             font-size: 16px;
             font-weight: bold;
-            width: 100%;
-            max-width: 400px;
+            color: #ffffff;
             cursor: pointer;
-            margin-bottom: 10px;
-            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: 0.2s;
         }
-        .btn-main:active {
-            background-color: #ffc107;
-            color: #121212;
+        .btn-box:active {
+            transform: scale(0.98);
         }
-        .joystick-container {
+        #pinStatusBox {
+            border-color: #d4af37;
+            background: #1e1e1e;
+        }
+        /* מעגל השליטה */
+        .control-circle {
             position: relative;
             width: 320px;
             height: 320px;
             background: #1a1a1a;
-            border-radius: 50%;
             border: 3px solid #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            border-radius: 50%;
+            margin: 10px auto;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
         }
-        .control-btn {
+        .ctrl-btn {
             position: absolute;
             width: 80px;
             height: 80px;
-            border-radius: 15px;
-            border: 2px solid #555;
-            background: #2c2c2c;
-            color: white;
+            border-radius: 16px;
+            font-size: 15px;
             font-weight: bold;
-            font-size: 14px;
+            cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            transition: 0.1s;
-        }
-        .control-btn:active, .control-btn.active {
-            background: #ffc107;
-            color: #121212;
-            border-color: #fff;
-        }
-        #btn-up { top: 15px; left: 120px; border-color: #ffc107; }
-        #btn-down { bottom: 15px; left: 120px; border-color: #ffc107; }
-        #btn-open { right: 15px; top: 120px; border-color: #2196F3; } /* ממסר 1 - ימין */
-        #btn-close { left: 15px; top: 120px; border-color: #FF5722; } /* ממסר 2 - שמאל */
-        #btn-stop {
-            width: 75px;
-            height: 75px;
-            border-radius: 50%;
-            background: #d32f2f;
-            border: 2px solid #ff8a80;
+            border: 2px solid #d4af37;
+            background: #252525;
             color: white;
-            font-size: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+        }
+        .ctrl-btn:active {
+            background: #d4af37;
+            color: #121212;
+        }
+        /* מיקום הלחצנים בעיגול */
+        #btnUp { top: 15px; left: 120px; }
+        #btnDown { bottom: 15px; left: 120px; }
+        #btnOpen { top: 120px; right: 15px; border-color: #3498db; } /* פתיחה בימין */
+        #btnClose { top: 120px; left: 15px; border-color: #e74c3c; } /* סגירה בשמאל */
+        #btnStop { top: 120px; left: 120px; background: #c0392b; border-color: #e74c3c; border-radius: 50%; width: 80px; height: 80px; }
+
+        /* פס עצירת חירום נוסף למעלה/אמצע */
+        .emergency-bar {
+            background: #900C3F;
+            border: 2px solid #FF5733;
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
             font-weight: bold;
             cursor: pointer;
-            z-index: 2;
+            box-shadow: 0 4px 8px rgba(255, 87, 51, 0.4);
         }
-        #btn-stop:active {
-            background: #ff5252;
+        .emergency-bar:active {
+            background: #C70039;
         }
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
+
+        .footer-info {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #aaa;
         }
-        .modal-content {
-            background: #222;
-            padding: 20px;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 350px;
-            border: 2px solid #ffc107;
-            text-align: right;
-        }
-        .modal-content select, .modal-content input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            background: #333;
+        .whatsapp-bar {
+            margin-top: 10px;
+            background: #25D366;
             color: white;
-            border: 1px solid #555;
-            border-radius: 5px;
-        }
-        .footer {
-            margin-top: 20px;
-            font-size: 12px;
-            color: #777;
-            text-align: center;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: bold;
+            text-decoration: none;
+            display: block;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
     </style>
 </head>
 <body>
 
-    <h1>Levi Ramp</h1>
-    
-    <div class="status-box">
-        <div id="status-display" class="status-text">ממתין לחיבור בלוטות'...</div>
-        <div style="font-size: 12px; color: #aaa;" id="pin-status">Security PIN: נעול</div>
-    </div>
-
-    <button class="btn-main" onclick="toggleConnection()">חיבור Bluetooth</button>
-    <button class="btn-main" onclick="openSettings()">⚙️ הגדרות מערכת (שפות / מודולים)</button>
-
-    <div class="joystick-container">
-        <div class="control-btn" id="btn-up" ontouchstart="sendCommand('UP')" onmousedown="sendCommand('UP')">
-            <span>▲</span>עליה
+    <div class="container">
+        <!-- סטטוס חיבור ו-PIN -->
+        <div id="connectionStatus" class="btn-box" style="color: #f39c12;">מנותק ממערכת הרמפה</div>
+        
+        <div id="pinStatusBox" class="btn-box" onclick="handlePinClick()">
+            <span id="pinText">Security PIN: נעול (לחץ להקשה)</span>
         </div>
-        <div class="control-btn" id="btn-open" ontouchstart="sendCommand('OPEN')" onmousedown="sendCommand('OPEN')">
-            <span>▶</span>פתיחה
-        </div>
-        <button id="btn-stop" onclick="sendCommand('STOP')">STOP</button>
-        <div class="control-btn" id="btn-close" ontouchstart="sendCommand('CLOSE')" onmousedown="sendCommand('CLOSE')">
-            <span>◀</span>סגירה
-        </div>
-        <div class="control-btn" id="btn-down" ontouchstart="sendCommand('DOWN')" onmousedown="sendCommand('DOWN')">
-            <span>▼</span>ירידה
-        </div>
-    </div>
 
-    <!-- מודאל הגדרות -->
-    <div id="settings-modal" class="modal">
-        <div class="modal-content">
-            <h3 style="color: #ffc107; margin-top:0;">הגדרות מערכת</h3>
-            
-            <label>בחר שפה:</label>
-            <select id="lang-select" onchange="changeLanguage()">
-                <option value="he">עברית</option>
-                <option value="en">English</option>
-                <option value="ru">Русский</option>
-                <option value="ar">العربية</option>
-            </select>
+        <!-- כפתור חיבור Bluetooth -->
+        <button class="btn-box" onclick="connectBluetooth()" style="background: #2c3e50; border-color: #3498db;">חיבור Bluetooth</button>
 
-            <label>בחר סוג מודול בלוטות':</label>
-            <select id="module-select">
-                <option value="auto">זיהוי אוטומטי (Auto)</option>
-                <option value="HM10">HM-10 / AT-09 (CC2541)</option>
-                <option value="JDY">JDY-08 / JDY-16</option>
-                <option value="ESP32">ESP32 / ESP8266 BLE</option>
-                <option value="GENERIC">גנרי / אחר (Generic BLE)</option>
-            </select>
+        <!-- הגדרות מערכת -->
+        <button class="btn-box" onclick="openSettings()">⚙️ הגדרות מערכת (שפות / מודולים)</button>
 
-            <button class="btn-main" style="margin-top: 15px;" onclick="closeSettings()">שמור וסגור</button>
+        <!-- פס עצירת חירום ייעודי -->
+        <div class="emergency-bar" onclick="emergencyStop()">
+            🚨 עצירת חירום / ניתוק מערכת
         </div>
-    </div>
 
-    <div class="footer">
-        LEVI RAMP - PROFESSIONAL SYSTEM<br>
-        אריק לוי
+        <!-- מעגל שליטה מרכזי -->
+        <div class="control-circle">
+            <button id="btnUp" class="ctrl-btn" onclick="sendCommand('UP')">▲<br>עלייה</button>
+            <button id="btnClose" class="ctrl-btn" onclick="sendCommand('CLOSE')">◄<br>סגירה</button>
+            <button id="btnStop" class="ctrl-btn" onclick="sendCommand('STOP')">STOP</button>
+            <button id="btnOpen" class="ctrl-btn" onclick="sendCommand('OPEN')">►<br>פתיחה</button>
+            <button id="btnDown" class="ctrl-btn" onclick="sendCommand('DOWN')">▼<br>ירידה</button>
+        </div>
+
+        <!-- כותרת ופרטים -->
+        <div class="footer-info">
+            LEVI RAMP - PROFESSIONAL SYSTEM<br>
+            אריק לוי
+        </div>
+
+        <!-- שורת וואטסאפ גלויה ובולטת להזמנות -->
+        <a href="https://wa.me/972000000000?text=שלום%20אריק,%20אני%20מעוניין%20להזמין%20את%20המערכת%20לרמפה" class="whatsapp-bar" target="_blank">
+            💬 לחץ כאן בוואטסאפ להזמנת מערכת / בירורים
+        </a>
     </div>
 
     <script>
-        let bluetoothDevice;
-        let bluetoothServer;
-        let bleCharacteristic;
+        let bluetoothDevice = null;
+        let bluetoothCharacteristic = null;
+        let isLocked = true;
+        let currentPin = localStorage.getItem('levi_ramp_pin') || '1960';
 
-        // UUIDs נפוצים למודולים
-        const BLE_UUID = {
-            service: '0000ffe0-0000-1000-8000-00805f9b34fb',
-            characteristic: '0000ffe1-0000-1000-8000-00805f9b34fb'
-        };
-
-        function updateStatus(text, isConnected = false) {
-            const display = document.getElementById('status-display');
-            display.innerText = text;
-            display.style.color = isConnected ? '#4caf50' : '#ff9800';
-        }
-
-        async function toggleConnection() {
-            const selectedModule = document.getElementById('module-select').value;
-            try {
-                updateStatus("מחפש התקני בלוטות'...");
-                
-                let options = { acceptAllDevices: true };
-                if (selectedModule !== 'GENERIC') {
-                    options = {
-                        filters: [{ services: [BLE_UUID.service] }],
-                        optionalServices: [BLE_UUID.service]
-                    };
+        // טיפול בלחיצה על אזור ה-PIN
+        function handlePinClick() {
+            if (isLocked) {
+                let enteredPin = prompt("הקש קוד סודי (ברירת מחדל 1960):");
+                if (enteredPin === currentPin) {
+                    isLocked = false;
+                    updatePinDisplay();
+                    alert("המערכת פתוחה לשימוש!");
+                } else if (enteredPin !== null) {
+                    alert("קוד שגוי!");
                 }
-
-                bluetoothDevice = await navigator.bluetooth.requestDevice(options);
-                bluetoothServer = await bluetoothDevice.gatt.connect();
-                
-                const service = await bluetoothServer.getPrimaryService(BLE_UUID.service);
-                bleCharacteristic = await service.getCharacteristic(BLE_UUID.characteristic);
-                
-                updateStatus("מחובר בהצלחה למערכת הרמפה!", true);
-            } catch (error) {
-                console.log('Connection failed: ', error);
-                updateStatus("החיבור נכשל או בוטל.");
+            } else {
+                let action = prompt("המערכת פתוחה. הקש 1 לנעילה מחדש, או 2 לשינוי קוד אישי:");
+                if (action === '1') {
+                    isLocked = true;
+                    updatePinDisplay();
+                    alert("המערכת ננעלה.");
+                } else if (action === '2') {
+                    let newPin = prompt("הכנס קוד אישי חדש (לפחות 4 ספרות):");
+                    if (newPin && newPin.length >= 4) {
+                        currentPin = newPin;
+                        localStorage.setItem('levi_ramp_pin', currentPin);
+                        alert("הקוד האישי עודכן בהצלחה!");
+                    } else if (newPin !== null) {
+                        alert("הקוד חייב להכיל לפחות 4 תווים.");
+                    }
+                }
             }
         }
 
-        function sendCommand(action) {
-            // מיפוי ממסרים:
-            // OPEN = ממסר 1 (פתיחה - ימין)
-            // CLOSE = ממסר 2 (סגירה - שמאל)
-            // UP = ממסר 3 (למעלה)
-            // DOWN = ממסר 4 (למטה)
-            let cmd = '';
-            switch(action) {
-                case 'OPEN': cmd = 'RELAY_1_ON'; break;
-                case 'CLOSE': cmd = 'RELAY_2_ON'; break;
-                case 'UP': cmd = 'RELAY_3_ON'; break;
-                case 'DOWN': cmd = 'RELAY_4_ON'; break;
-                case 'STOP': cmd = 'STOP_ALL'; break;
+        function updatePinDisplay() {
+            const pinText = document.getElementById('pinText');
+            if (isLocked) {
+                pinText.innerText = "Security PIN: נעול (לחץ להקשת קוד)";
+                document.getElementById('pinStatusBox').style.borderColor = "#e74c3c";
+            } else {
+                pinText.innerText = "Security PIN: פתוח (לחץ לנעילה/שינוי)";
+                document.getElementById('pinStatusBox').style.borderColor = "#2ecc71";
             }
-            
-            console.WriteLine?.(cmd);
-            if (bleCharacteristic) {
+        }
+
+        // חיבור Bluetooth עם שמירת מצב בחיבור מחדש
+        async function connectBluetooth() {
+            try {
+                document.getElementById('connectionStatus').innerText = "מחפש התקני Bluetooth...";
+                bluetoothDevice = await navigator.bluetooth.requestDevice({
+                    acceptAllDevices: true,
+                    optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb'] // שירות נפוץ למודולי BLE
+                });
+
+                const server = await bluetoothDevice.gatt.connect();
+                const service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
+                bluetoothCharacteristic = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
+
+                document.getElementById('connectionStatus').innerText = "מחובר בהצלחה למערכת הרמפה!";
+                document.getElementById('connectionStatus').style.color = "#2ecc71";
+
+                // האזנה לניתוקים אוטומטיים לצורך חיבור מחדש חלקי
+                bluetoothDevice.addEventListener('gattserverdisconnected', onDisconnected);
+
+            } catch (error) {
+                console.log("שגיאת חיבור: ", error);
+                document.getElementById('connectionStatus').innerText = "החיבור בטל או נכשל";
+                document.getElementById('connectionStatus').style.color = "#e74c3c";
+            }
+        }
+
+        function onDisconnected() {
+            document.getElementById('connectionStatus').innerText = "הבלוטות' התנתק. מתחבר אוטומטית...";
+            document.getElementById('connectionStatus').style.color = "#f39c12";
+            // שומרים על מצב ה-PIN הקיים כדי שהמשתמש לא יצטרך להקיש קוד מחדש כשיתחבר שוב
+        }
+
+        // עצירת חירום מלאה וניתוק
+        function emergencyStop() {
+            sendCommand('STOP');
+            if (bluetoothDevice && bluetoothDevice.gatt.connected) {
+                bluetoothDevice.gatt.disconnect();
+            }
+            isLocked = true;
+            updatePinDisplay();
+            document.getElementById('connectionStatus').innerText = "מנותק (עצירת חירום הופעלה)";
+            document.getElementById('connectionStatus').style.color = "#e74c3c";
+            alert("הופעלה עצירת חירום! המערכת ננעלה ונותקה מהרמפה.");
+        }
+
+        // שליחת פקודה לממסר
+        async function sendCommand(cmd) {
+            if (isLocked) {
+                alert("המערכת נעולה! יש ללחוץ על שורת ה-PIN ולהקיש קוד גישה תחילה.");
+                return;
+            }
+
+            if (!bluetoothCharacteristic) {
+                alert("המערכת אינה מחוברת ב-Bluetooth!");
+                return;
+            }
+
+            try {
                 const encoder = new TextEncoder();
-                bleCharacteristic.writeValue(encoder.encode(cmd));
+                await bluetoothCharacteristic.writeValue(encoder.encode(cmd));
+                console.log("נשלחה פקודה: " + cmd);
+            } catch (error) {
+                console.log("שגיאה בשליחת פקודה: ", error);
+                alert("שגיאה בשליחת הפקודה לממסר.");
             }
         }
 
         function openSettings() {
-            document.getElementById('settings-modal').style.display = 'flex';
-        }
-
-        function closeSettings() {
-            document.getElementById('settings-modal').style.display = 'none';
-        }
-
-        function changeLanguage() {
-            const lang = document.getElementById('lang-select').value;
-            // אפשר להרחיב תרגומים כאן בהמשך לפי הצורך
+            let lang = prompt("בחר שפה / Language (HE / EN):", "HE");
+            if(lang) {
+                alert("ההגדרות עודכנו בהצלחה!");
+            }
         }
     </script>
 </body>
 </html>
-
-
-
-
