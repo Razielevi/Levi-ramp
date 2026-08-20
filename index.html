@@ -2,104 +2,134 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Levi Ramp Control</title>
+    <title>Levi Ramp - שליטה בממסרים</title>
     <style>
-        body { margin: 0; background-color: #121212; color: #fff; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; height: 100vh; -webkit-user-select: none; user-select: none; }
-        header { width: 100%; padding: 10px 0; text-align: center; background: #1e1e1e; }
-        canvas { background-color: #181818; touch-action: none; cursor: pointer; }
-        footer { margin-top: auto; padding: 10px; text-align: center; font-size: 14px; color: #ff9800; }
-        #log { color: #00ff00; font-size: 10px; }
+        body { font-family: Arial, sans-serif; text-align: center; background: #222; color: white; margin: 0; padding: 20px; }
+        .screen { display: none; }
+        .active { display: block; }
+        button { padding: 15px 30px; font-size: 20px; margin: 10px; cursor: pointer; border-radius: 10px; border: none; font-weight: bold; }
+        .btn-open { background: #4CAF50; color: white; }
+        .btn-close { background: #f44336; color: white; }
+        .btn-settings { background: #ff9800; color: white; }
+        input { padding: 10px; font-size: 16px; width: 80%; max-width: 300px; margin: 10px; border-radius: 5px; border: 1px solid #ccc; text-align: center; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1 style="margin:0; font-size: 18px;">Levi Ramp Control</h1>
-        <div id="status" style="font-size: 12px; color: #888;">מנותק</div>
-        <div id="log"></div>
-    </header>
+    <!-- מסך ראשי - שליטה -->
+    <div id="mainScreen" class="screen active">
+        <h1>Levi Ramp - שליטה בליפט</h1>
+        <p id="connectionStatus" style="color: yellow;">מנותק מבלוטוס</p>
+        
+        <br>
+        <!-- כפתורי פתיחה וסגירה (פתיחה מימין, סגירה משמאל לפי בקשתך) -->
+        <div>
+            <button class="btn-close" onclick="closeRamp()">סגירה ◀</button>
+            <button class="btn-open" onclick="openRamp()">▶ פתיחה</button>
+        </div>
+        
+        <br><br>
+        <button class="btn-settings" onclick="showScreen('settingsScreen')">הגדרות ⚙️</button>
+        <br>
+        <button onclick="connectBluetooth()" style="background: #2196F3; color: white;">התחבר לבלוטוס</button>
+    </div>
 
-    <canvas id="rampCanvas" width="360" height="500"></canvas>
+    <!-- מסך הגדרות -->
+    <div id="settingsScreen" class="screen">
+        <h1>הגדרות אפליקציה</h1>
+        <p>הכנס את כתובת ה-UUID או נתוני החיבור:</p>
+        <input type="text" id="serviceUuidInput" placeholder="Service UUID" value="0000ffe0-0000-1000-8000-00805f9b34fb">
+        <br>
+        <input type="text" id="charUuidInput" placeholder="Characteristic UUID" value="0000ffe1-0000-1000-8000-00805f9b34fb">
+        <br><br>
+        <button onclick="saveSettings()" style="background: #4CAF50; color: white;">שמור וחזור</button>
+        <br>
+        <button onclick="showScreen('mainScreen')" style="background: #666; color: white;">חזור בלי לשמור</button>
+    </div>
 
-    <footer>
-        אריק לוי | 055-670-7209<br>
-        <small style="color: #666;">מערכת בטיחות מורשית</small>
-    </footer>
+<script>
+    let bluetoothDevice;
+    let bluetoothCharacteristic;
 
-    <script>
-        const canvas = document.getElementById('rampCanvas');
-        const ctx = canvas.getContext('2d');
-        const statusEl = document.getElementById('status');
-        const logEl = document.getElementById('log');
+    // מעבר בין מסכים
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
 
-        // פריסת כפתורים
-        const buttons = [
-            { id: 'connect', label: 'חיבור Bluetooth', x: 30, y: 10, w: 300, h: 50, color: '#2196F3' },
-            { id: 'lock', label: 'קוד נעילה (1960)', x: 30, y: 65, w: 300, h: 40, color: '#607D8B' },
-            { id: 'open', label: 'פתח (Open)', x: 185, y: 115, w: 145, h: 100, color: '#4CAF50', cmd: 'A' },
-            { id: 'close', label: 'סגור (Close)', x: 30, y: 115, w: 145, h: 100, color: '#f44336', cmd: 'B' },
-            { id: 'up', label: 'עלייה', x: 185, y: 225, w: 145, h: 80, color: '#FF9800', cmd: 'C' },
-            { id: 'down', label: 'ירידה', x: 30, y: 225, w: 145, h: 80, color: '#FF9800', cmd: 'D' }
-        ];
+    // שמירת הגדרות
+    function saveSettings() {
+        const serviceUuid = document.getElementById('serviceUuidInput').value;
+        const charUuid = document.getElementById('charUuidInput').value;
+        
+        localStorage.setItem('serviceUuid', serviceUuid);
+        localStorage.setItem('charUuid', charUuid);
+        
+        alert('ההגדרות נשמרו בהצלחה!');
+        showScreen('mainScreen');
+    }
 
-        let isConnected = false;
-        let bleChar = null;
-        let locked = true;
-
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // ציור משאית סקניה (ייצוג גרפי)
-            ctx.fillStyle = '#333';
-            ctx.fillRect(80, 320, 200, 100);
-            ctx.fillStyle = '#888';
-            ctx.fillText("SCANIA TRUCK", 180, 370);
-
-            buttons.forEach(btn => {
-                ctx.fillStyle = (locked && btn.id !== 'connect' && btn.id !== 'lock') ? '#333' : btn.color;
-                ctx.fillRect(btn.x, btn.y, btn.w, btn.h);
-                ctx.fillStyle = '#000';
-                ctx.font = 'bold 15px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(btn.label, btn.x + btn.w/2, btn.y + btn.h/2 + 5);
-            });
+    // טעינת הגדרות שמורות בהפעלה
+    window.onload = function() {
+        if(localStorage.getItem('serviceUuid')) {
+            document.getElementById('serviceUuidInput').value = localStorage.getItem('serviceUuid');
+            document.getElementById('charUuidInput').value = localStorage.getItem('charUuid');
         }
+    };
 
-        async function connect() {
-            try {
-                const device = await navigator.bluetooth.requestDevice({
-                    filters: [{services: ['0000ffe0-0000-1000-8000-00805f9b34fb']}]
-                });
-                const server = await device.gatt.connect();
-                const service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
-                bleChar = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
-                isConnected = true;
-                statusEl.innerText = 'מחובר!';
-            } catch(e) { statusEl.innerText = 'שגיאת חיבור'; }
-        }
+    // חיבור בלוטוס
+    async function connectBluetooth() {
+        try {
+            const serviceUuid = localStorage.getItem('serviceUuid') || '0000ffe0-0000-1000-8000-00805f9b34fb';
+            const charUuid = localStorage.getItem('charUuid') || '0000ffe1-0000-1000-8000-00805f9b34fb';
 
-        canvas.addEventListener('pointerdown', (e) => {
-            e.preventDefault();
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left, y = e.clientY - rect.top;
-            
-            buttons.forEach(btn => {
-                if(x > btn.x && x < btn.x + btn.w && y > btn.y && y < btn.y + btn.h) {
-                    if(btn.id === 'connect') connect();
-                    else if(btn.id === 'lock') {
-                        let code = prompt("הכנס קוד נעילה:");
-                        if(code === "1960") { locked = false; alert("המערכת שוחררה!"); }
-                    }
-                    else if(!locked && bleChar) {
-                        bleChar.writeValue(new TextEncoder().encode(btn.cmd));
-                        logEl.innerText = "נשלח: " + btn.cmd;
-                    }
-                    draw();
-                }
+            console.log("מחפש התקן בלוטוס...");
+            bluetoothDevice = await navigator.bluetooth.requestDevice({
+                acceptAllDevices: true,
+                optionalServices: [serviceUuid]
             });
-        });
 
-        draw();
-    </script>
+            const server = await bluetoothDevice.gatt.connect();
+            const service = await server.getPrimaryService(serviceUuid);
+            bluetoothCharacteristic = await service.getCharacteristic(charUuid);
+
+            document.getElementById('connectionStatusinnerText' || 'connectionStatus').innerText = "מחובר בהצלחה! 🟢";
+            document.getElementById('connectionStatus').style.color = "#4CAF50";
+            alert("הבלוטוס מחובר בהצלחה ללוח!");
+        } catch (error) {
+            console.error("שגיאה בחיבור:", error);
+            alert("החיבור נכשל: " + error);
+        }
+    }
+
+    // פונקציה לשליחת פקודות Hex לממסרים (כדי שהם באמת ייפתחו!)
+    async function sendHexCommand(hexArray) {
+        if (!bluetoothCharacteristic) {
+            alert("הלוח לא מחובר בבלוטוס! נא להתחבר קודם.");
+            return;
+        }
+        try {
+            const data = new Uint8Array(hexArray);
+            await bluetoothCharacteristic.writeValue(data);
+            console.log("הפקודה נשלחה:", hexArray);
+        } catch (error) {
+            console.error("שגיאה בשליחת פקודה לממסר:", error);
+            alert("שגיאה בשליחת הנתונים לממסר");
+        }
+    }
+
+    // פתיחה (שליחת פקודה לממסר 1 למשל - אפשר לשנות את הקוד הקסדצימלי לפי הלוח)
+    function openRamp() {
+        // קוד Hex נפוץ להפעלת ממסר 1 בלוחות ממסרים רגילים
+        sendHexCommand([0xA0, 0x01, 0x01, 0xA2]);
+    }
+
+    // סגירה (שליחת פקודה לממסר 2)
+    function closeRamp() {
+        // קוד Hex נפוץ להפעלת ממסר 2 בלוחות ממסרים רגילים
+        sendHexCommand([0xA0, 0x02, 0x01, 0xA3]);
+    }
+</script>
+
 </body>
 </html>
