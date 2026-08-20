@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
@@ -6,70 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Levi Ramp Control</title>
     <style>
-        body { 
-            margin: 0; 
-            background-color: #121212; 
-            color: #fff; 
-            font-family: Arial, sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            height: 100vh;
-            /* מונע בחירת טקסט והעתקה בכל המסך */
-            -webkit-user-select: none;
-            user-select: none;
-            -webkit-touch-callout: none;
-        }
-        header { width: 100%; padding: 15px 0; text-align: center; background: #1e1e1e; }
-        canvas { 
-            background-color: #181818; 
-            touch-action: none; /* מונע גלילה או התנהגות דפדפן בזמן לחיצה על הקנבס */
-        }
-        footer { margin-top: auto; padding: 10px; font-size: 12px; color: #666; }
+        body { margin: 0; background-color: #121212; color: #fff; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; height: 100vh; -webkit-user-select: none; user-select: none; }
+        header { width: 100%; padding: 10px 0; text-align: center; background: #1e1e1e; }
+        canvas { background-color: #181818; touch-action: none; cursor: pointer; }
+        footer { margin-top: auto; padding: 10px; text-align: center; font-size: 14px; color: #ff9800; }
+        #log { color: #00ff00; font-size: 10px; }
     </style>
 </head>
 <body>
 
     <header>
-        <h1 style="margin:0; font-size: 18px; color: #ff9800;">Levi Ramp</h1>
+        <h1 style="margin:0; font-size: 18px;">Levi Ramp Control</h1>
         <div id="status" style="font-size: 12px; color: #888;">מנותק</div>
+        <div id="log"></div>
     </header>
 
     <canvas id="rampCanvas" width="360" height="500"></canvas>
 
-    <footer>אריק לוי | 055-670-7209</footer>
+    <footer>
+        אריק לוי | 055-670-7209<br>
+        <small style="color: #666;">מערכת בטיחות מורשית</small>
+    </footer>
 
     <script>
         const canvas = document.getElementById('rampCanvas');
         const ctx = canvas.getContext('2d');
         const statusEl = document.getElementById('status');
-        
-        // הגדרת כפתורים במבנה של 2 עמודות, ללא חפיפה
+        const logEl = document.getElementById('log');
+
+        // פריסת כפתורים
         const buttons = [
-            { id: 'connect', label: 'חיבור Bluetooth', x: 20, y: 10, w: 320, h: 50, color: '#2196F3' },
-            // פתיחה מימין, סגירה משמאל
-            { id: 'open', label: 'פתח (Open)', x: 185, y: 80, w: 155, h: 100, color: '#4CAF50', cmd: 'OPEN_CMD' },
-            { id: 'close', label: 'סגור (Close)', x: 20, y: 80, w: 155, h: 100, color: '#f44336', cmd: 'CLOSE_CMD' },
-            
-            { id: 'up', label: 'עלייה', x: 185, y: 200, w: 155, h: 80, color: '#FF9800', cmd: 'UP_CMD' },
-            { id: 'down', label: 'ירידה', x: 20, y: 200, w: 155, h: 80, color: '#FF9800', cmd: 'DOWN_CMD' },
-            
-            { id: 'relay5', label: 'ממסר ראשי #5', x: 20, y: 300, w: 320, h: 60, color: '#9C27B0', cmd: 'RELAY5_CMD' }
+            { id: 'connect', label: 'חיבור Bluetooth', x: 30, y: 10, w: 300, h: 50, color: '#2196F3' },
+            { id: 'lock', label: 'קוד נעילה (1960)', x: 30, y: 65, w: 300, h: 40, color: '#607D8B' },
+            { id: 'open', label: 'פתח (Open)', x: 185, y: 115, w: 145, h: 100, color: '#4CAF50', cmd: 'A' },
+            { id: 'close', label: 'סגור (Close)', x: 30, y: 115, w: 145, h: 100, color: '#f44336', cmd: 'B' },
+            { id: 'up', label: 'עלייה', x: 185, y: 225, w: 145, h: 80, color: '#FF9800', cmd: 'C' },
+            { id: 'down', label: 'ירידה', x: 30, y: 225, w: 145, h: 80, color: '#FF9800', cmd: 'D' }
         ];
 
-        let activeBtn = null;
         let isConnected = false;
         let bleChar = null;
+        let locked = true;
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // ציור משאית סקניה (ייצוג גרפי)
+            ctx.fillStyle = '#333';
+            ctx.fillRect(80, 320, 200, 100);
+            ctx.fillStyle = '#888';
+            ctx.fillText("SCANIA TRUCK", 180, 370);
+
             buttons.forEach(btn => {
-                ctx.fillStyle = (activeBtn === btn.id) ? '#ffffff' : btn.color;
+                ctx.fillStyle = (locked && btn.id !== 'connect' && btn.id !== 'lock') ? '#333' : btn.color;
                 ctx.fillRect(btn.x, btn.y, btn.w, btn.h);
                 ctx.fillStyle = '#000';
-                ctx.font = 'bold 16px Arial';
+                ctx.font = 'bold 15px Arial';
                 ctx.textAlign = 'center';
-                ctx.fillText(btn.label, btn.x + btn.w/2, btn.y + btn.h/2 + 6);
+                ctx.fillText(btn.label, btn.x + btn.w/2, btn.y + btn.h/2 + 5);
             });
         }
 
@@ -81,42 +73,32 @@
                 const server = await device.gatt.connect();
                 const service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
                 bleChar = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
-                 isConnected = true;
+                isConnected = true;
                 statusEl.innerText = 'מחובר!';
             } catch(e) { statusEl.innerText = 'שגיאת חיבור'; }
         }
 
-        async function send(cmd, state) {
-            if(!isConnected) return;
-            const msg = cmd + '_' + state;
-            try { await bleChar.writeValue(new TextEncoder().encode(msg)); } catch(e) {}
-        }
-
-        // מניעת התנהגויות ברירת מחדל של הדפדפן על הקנבס
         canvas.addEventListener('pointerdown', (e) => {
-            e.preventDefault(); // מונע בחירת טקסט / גרירה
+            e.preventDefault();
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left, y = e.clientY - rect.top;
             
             buttons.forEach(btn => {
                 if(x > btn.x && x < btn.x + btn.w && y > btn.y && y < btn.y + btn.h) {
-                    activeBtn = btn.id;
                     if(btn.id === 'connect') connect();
-                    else if(btn.cmd) send(btn.cmd, 'ON');
+                    else if(btn.id === 'lock') {
+                        let code = prompt("הכנס קוד נעילה:");
+                        if(code === "1960") { locked = false; alert("המערכת שוחררה!"); }
+                    }
+                    else if(!locked && bleChar) {
+                        bleChar.writeValue(new TextEncoder().encode(btn.cmd));
+                        logEl.innerText = "נשלח: " + btn.cmd;
+                    }
                     draw();
                 }
             });
         });
 
-        window.addEventListener('pointerup', (e) => {
-            if(activeBtn) {
-                const btn = buttons.find(b => b.id === activeBtn);
-                if(btn && btn.cmd) send(btn.cmd, 'OFF'); // מפסיק ברגע עזיבת האצבע
-                activeBtn = null;
-                draw();
-            }
-        });
-    
         draw();
     </script>
 </body>
