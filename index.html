@@ -2,129 +2,424 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Levi Ramp - Tail-Lift Controller</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LEVI RAMP</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-            text-align: center;
+        :root {
+            --primary: #c62828;
+            --primary-dark: #8e0000;
+            --bg: #121212;
+            --card-bg: #1e1e1e;
+            --text: #ffffff;
+            --text-secondary: #b0b0b0;
+            --accent: #ff9800;
+            --success: #2e7d32;
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 450px;
-            margin: auto;
-            background: #1e1e1e;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
-        }
-        h2 { margin-bottom: 5px; color: #ffc107; }
-        #connection-status { font-size: 14px; margin-bottom: 15px; }
-        button {
-            width: 100%;
-            padding: 20px;
-            margin: 8px 0;
-            font-size: 18px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             user-select: none;
             -webkit-user-select: none;
         }
-        button:active { transform: scale(0.98); opacity: 0.9; }
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 15px;
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            overflow-x: hidden;
         }
-        /* פתיחה מימין, סגירה משמאל */
-        .btn-close { background: #dc3545; color: white; } /* סגירה: ממסר 2+4 */
-        .btn-open { background: #28a745; color: white; }  /* פתיחה: ממסר 1+4 */
-        .btn-up { background: #ffc107; color: #000; }    /* הרמה: ממסר 3+2 */
-        .btn-down { background: #17a2b8; color: white; } /* הורדה: ממסר 3+1 */
-        .btn-ble { background: #007bff; color: white; margin-bottom: 10px; padding: 15px; }
+
+        header {
+            width: 100%;
+            max-width: 450px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #333;
+            margin-bottom: 10px;
+        }
+
+        .logo-container img {
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .status-badge {
+            background: #333;
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            border: 1px solid #444;
+        }
+
+        .status-badge.connected {
+            background: rgba(46, 125, 50, 0.2);
+            color: #81c784;
+            border-color: var(--success);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--text-secondary);
+            border-radius: 50%;
+        }
+
+        .connected .status-dot {
+            background-color: var(--success);
+            box-shadow: 0 0 8px var(--success);
+        }
+
+        main {
+            width: 100%;
+            max-width: 450px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex: 1;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* PIN Screen Styling */
+        #pin-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .pin-box {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+        }
+
+        .pin-dots {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .pin-dot {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            transition: 0.2s;
+        }
+
+        .pin-dot.filled {
+            background: var(--primary);
+        }
+
+        .pin-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .pin-btn {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: white;
+            font-size: 1.5rem;
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+
+        .pin-btn:active {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* --- עיצוב הג'ויסטיק העגול החדש --- */
+        .joystick-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 20px 0;
+        }
+
+        .joystick-container {
+            position: relative;
+            width: 280px; /* גודל כללי של העיגול */
+            height: 280px;
+            background: #2a2a2a;
+            border-radius: 50%;
+            display: grid;
+            grid-template-areas: 
+                ". up ."
+                "left center right"
+                ". down .";
+            padding: 10px;
+            box-shadow: 0 0 25px rgba(0,0,0,0.6), inset 0 0 15px rgba(0,0,0,0.3);
+            border: 2px solid #333;
+        }
+
+        .joy-btn {
+            background: #333;
+            border: 2px solid #444;
+            color: white;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            font-size: 1rem;
+        }
+
+        .joy-btn span {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        /* אפקט לחיצה - אדום */
+        .joy-btn:active, .joy-btn.active {
+            background: var(--primary);
+            border-color: white;
+            transform: scale(0.97);
+            box-shadow: 0 0 15px var(--primary);
+        }
+
+        .up-btn { grid-area: up; border-radius: 15px 15px 5px 5px; }
+        .down-btn { grid-area: down; border-radius: 5px 5px 15px 15px; }
+        .left-btn { grid-area: left; border-radius: 15px 5px 5px 15px; }
+        .right-btn { grid-area: right; border-radius: 5px 15px 15px 5px; }
+
+        /* מרכז העיגול - ריק עם לוגו קטן */
+        .center-circle {
+            grid-area: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #222;
+            border-radius: 50%;
+            margin: -5px; /* חיבור בין הכפתורים */
+            pointer-events: none;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        
+        .center-circle::after {
+            content: 'LEVI';
+            color: #444;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        /* Truck Image Banner */
+        .truck-banner {
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #333;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .truck-banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Bottom Bar / Actions */
+        .bottom-actions {
+            width: 100%;
+            max-width: 450px;
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .action-btn {
+            flex: 1;
+            background: var(--card-bg);
+            border: 1px solid #333;
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .action-btn:hover {
+            background: #2a2a2a;
+            border-color: #555;
+        }
+
+        .whatsapp-btn {
+            background: rgba(37, 211, 102, 0.15);
+            border-color: #25d366;
+            color: #25d366;
+        }
+
+        /* Settings Modal */
+        #settings-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 400px;
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid #444;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .setting-group {
+            margin-bottom: 15px;
+        }
+
+        .setting-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .setting-group select, .setting-group input {
+            width: 100%;
+            padding: 10px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .error-msg {
+            color: var(--primary);
+            font-size: 0.85rem;
+            margin-top: 10px;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>Levi Ramp</h2>
-        <p style="color: #aaa; font-size: 13px;">שליטה רגעית (4 ממסרים)</p>
-        
-        <div id="connection-status" style="color: orange;">מצב: מנותק מ-BLE</div>
-        <button class="btn-ble" onclick="connectBLE()">התחבר ל-Bluetooth</button>
-
-        <div class="grid">
-            <!-- כפתור סגירה (משמאל) -->
-            <button class="btn-close" 
-                onmousedown="sendCmd('CLOSE_ON')" onmouseup="sendCmd('STOP')" onmouseleave="sendCmd('STOP')"
-                ontouchstart="sendCmd('CLOSE_ON')" ontouchend="sendCmd('STOP')">
-                🔒 סגירה<br><small style="font-size:11px;">ממסר 2 + 4</small>
-            </button>
-
-            <!-- כפתור פתיחה (מימין) -->
-            <button class="btn-open" 
-                onmousedown="sendCmd('OPEN_ON')" onmouseup="sendCmd('STOP')" onmouseleave="sendCmd('STOP')"
-                ontouchstart="sendCmd('OPEN_ON')" ontouchend="sendCmd('STOP')">
-                🔒 פתיחה<br><small style="font-size:11px;">ממסר 1 + 4</small>
-            </button>
-            
-            <!-- כפתור הרמה -->
-            <button class="btn-up" 
-                onmousedown="sendCmd('UP_ON')" onmouseup="sendCmd('STOP')" onmouseleave="sendCmd('STOP')"
-                ontouchstart="sendCmd('UP_ON')" ontouchend="sendCmd('STOP')">
-                🔼 הרמה<br><small style="font-size:11px;">ממסר 3 + 2</small>
-            </button>
-
-            <!-- כפתור הורדה -->
-            <button class="btn-down" 
-                onmousedown="sendCmd('DOWN_ON')" onmouseup="sendCmd('STOP')" onmouseleave="sendCmd('STOP')"
-                ontouchstart="sendCmd('DOWN_ON')" ontouchend="sendCmd('STOP')">
-                🔽 הורדה<br><small style="font-size:11px;">ממסר 3 + 1</small>
-            </button>
+    <!-- מסך קוד גישה (PIN) - קוד קבוע 1960 -->
+    <div id="pin-screen">
+        <div class="pin-box">
+            <h2 id="txt-enter-code">קוד גישה</h2>
+            <p style="color: var(--text-secondary); margin-top: 5px; font-size: 0.9rem;">הזן את הקוד שקיבלת</p>
+            <div class="pin-dots">
+                <div class="pin-dot" id="d0"></div>
+                <div class="pin-dot" id="d1"></div>
+                <div class="pin-dot" id="d2"></div>
+                <div class="pin-dot" id="d3"></div>
+            </div>
+            <div class="pin-pad">
+                <button class="pin-btn" onclick="pressPin('1')">1</button>
+                <button class="pin-btn" onclick="pressPin('2')">2</button>
+                <button class="pin-btn" onclick="pressPin('3')">3</button>
+                <button class="pin-btn" onclick="pressPin('4')">4</button>
+                <button class="pin-btn" onclick="pressPin('5')">5</button>
+                <button class="pin-btn" onclick="pressPin('6')">6</button>
+                <button class="pin-btn" onclick="pressPin('7')">7</button>
+                <button class="pin-btn" onclick="pressPin('8')">8</button>
+                <button class="pin-btn" onclick="pressPin('9')">9</button>
+                <button class="pin-btn" onclick="pressPin('C')">C</button>
+                <button class="pin-btn" onclick="pressPin('0')">0</button>
+                <button class="pin-btn" onclick="pressPin('OK')">✔</button>
+            </div>
+            <div id="pin-error" class="error-msg">קוד שגוי — נסה שוב</div>
+            <a href="https://wa.me/972556707209?text=אשמח לקבל קוד גישה לרמפה" target="_blank" style="display: block; margin-top: 20px; color: var(--accent); font-size: 0.85rem; text-decoration: none;">אין לך קוד? הזמן רכיב בוואטסאפ</a>
         </div>
     </div>
 
-    <script>
-        let bluetoothDevice;
-        let bleCharacteristic;
+    <!-- כותרת ראשית -->
+    <header>
+        <div class="logo-container">
+            <img src="icon-192.png" alt="LEVI RAMP" onerror="this.style.display='none'">
+            <span style="font-weight: bold; font-size: 1.2rem; color: white; margin-right: 10px;">LEVI RAMP</span>
+        </div>
+        <div id="bt-status" class="status-badge" onclick="toggleBluetooth()">
+            <div class="status-dot"></div>
+            <span id="bt-status-text">התחבר בלוטוס</span>
+        </div>
+    </header>
 
-        async function connectBLE() {
-            try {
-                const device = await navigator.bluetooth.requestDevice({
-                    acceptAllDevices: true,
-                    optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb']
-                });
-                
-                const server = await device.gatt.connect();
-                const service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
-                bleCharacteristic = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
-                
-                document.getElementById("connection-status").innerText = "מצב: מחובר בהצלחה ✅";
-                document.getElementById("connection-status").style.color = "lightgreen";
-            } catch (error) {
-                console.error("שגיאת חיבור:", error);
-                alert("החיבור נכשל או בוטל.");
-            }
-        }
+    <!-- תוכן מרכזי - ג'ויסטיק הפעלה ותמונה -->
+    <main>
+        <!-- באנ
 
-        async function sendCmd(action) {
-            console.log("פקודה: " + action);
-            if (bleCharacteristic) {
-                try {
-                    const encoder = new TextEncoder();
-                    await bleCharacteristic.writeValue(encoder.encode(action));
-                } catch (err) {
-                    console.error("שגיאה בשליחת נתונים:", err);
-                }
-            }
-        }
-    </script>
-</body>
-</html>
+
 
