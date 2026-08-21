@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
@@ -26,6 +27,7 @@
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             user-select: none;
             -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent; /* מניעת סימון כחול בלחיצה */
         }
 
         body {
@@ -37,7 +39,7 @@
             align-items: center;
             justify-content: space-between;
             padding: 15px;
-            overflow-x: hidden;
+            overflow: hidden;
         }
 
         header {
@@ -48,7 +50,12 @@
             align-items: center;
             padding: 10px 0;
             border-bottom: 1px solid #333;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
         }
 
         .logo-container img {
@@ -92,13 +99,13 @@
             max-width: 450px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 10px;
             flex: 1;
             justify-content: center;
             align-items: center;
         }
 
-        /* PIN Screen Styling */
+        /* --- מסך קוד גישה (PIN) - מתוקן ומלא --- */
         #pin-screen {
             position: fixed;
             top: 0;
@@ -129,7 +136,7 @@
             display: flex;
             justify-content: center;
             gap: 15px;
-            margin: 25px 0;
+            margin: 20px 0;
         }
 
         .pin-dot {
@@ -159,6 +166,9 @@
             border-radius: 12px;
             cursor: pointer;
             transition: 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .pin-btn:active {
@@ -166,18 +176,25 @@
             border-color: var(--primary);
         }
 
-        /* --- עיצוב הג'ויסטיק העגול החדש --- */
+        .error-msg {
+            color: var(--primary);
+            font-size: 0.85rem;
+            margin-top: 10px;
+            display: none;
+        }
+
+        /* --- עיצוב הג'ויסטיק העגול החדש (משולב ומלא) --- */
         .joystick-wrapper {
             display: flex;
             justify-content: center;
             align-items: center;
             width: 100%;
-            padding: 20px 0;
+            padding: 15px 0;
         }
 
         .joystick-container {
             position: relative;
-            width: 280px; /* גודל כללי של העיגול */
+            width: 280px; /* גודל העיגול */
             height: 280px;
             background: #2a2a2a;
             border-radius: 50%;
@@ -212,7 +229,7 @@
         }
 
         /* אפקט לחיצה - אדום */
-        .joy-btn:active, .joy-btn.active {
+        .joy-btn:active {
             background: var(--primary);
             border-color: white;
             transform: scale(0.97);
@@ -224,7 +241,7 @@
         .left-btn { grid-area: left; border-radius: 15px 5px 5px 15px; }
         .right-btn { grid-area: right; border-radius: 5px 15px 15px 5px; }
 
-        /* מרכז העיגול - ריק עם לוגו קטן */
+        /* מרכז העיגול - ריק עם מיתוג קטן */
         .center-circle {
             grid-area: center;
             display: flex;
@@ -251,11 +268,11 @@
             border-radius: 12px;
             overflow: hidden;
             border: 1px solid #333;
-            height: 100px;
+            height: 90px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
 
         .truck-banner img {
@@ -270,7 +287,7 @@
             max-width: 450px;
             display: flex;
             gap: 10px;
-            margin-top: 10px;
+            margin-top: 5px;
         }
 
         .action-btn {
@@ -278,7 +295,7 @@
             background: var(--card-bg);
             border: 1px solid #333;
             color: white;
-            padding: 12px;
+            padding: 10px;
             border-radius: 12px;
             font-size: 0.95rem;
             display: flex;
@@ -364,22 +381,15 @@
             border-radius: 8px;
             font-size: 1rem;
         }
-
-        .error-msg {
-            color: var(--primary);
-            font-size: 0.85rem;
-            margin-top: 10px;
-            display: none;
-        }
     </style>
 </head>
 <body>
 
-    <!-- מסך קוד גישה (PIN) - קוד קבוע 1960 -->
+    <!-- מסך קוד גישה (PIN) - מלא, לחיץ ומתפקד -->
     <div id="pin-screen">
         <div class="pin-box">
             <h2 id="txt-enter-code">קוד גישה</h2>
-            <p style="color: var(--text-secondary); margin-top: 5px; font-size: 0.9rem;">הזן את הקוד שקיבלת</p>
+            <p style="color: var(--text-secondary); margin-top: 5px; font-size: 0.9rem;">הזן את הקוד שקיבלת (1960)</p>
             <div class="pin-dots">
                 <div class="pin-dot" id="d0"></div>
                 <div class="pin-dot" id="d1"></div>
@@ -410,16 +420,3 @@
         <div class="logo-container">
             <img src="icon-192.png" alt="LEVI RAMP" onerror="this.style.display='none'">
             <span style="font-weight: bold; font-size: 1.2rem; color: white; margin-right: 10px;">LEVI RAMP</span>
-        </div>
-        <div id="bt-status" class="status-badge" onclick="toggleBluetooth()">
-            <div class="status-dot"></div>
-            <span id="bt-status-text">התחבר בלוטוס</span>
-        </div>
-    </header>
-
-    <!-- תוכן מרכזי - ג'ויסטיק הפעלה ותמונה -->
-    <main>
-        <!-- באנ
-
-
-
