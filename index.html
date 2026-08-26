@@ -1,305 +1,319 @@
-
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Levi Ramp Control - אריק לוי</title>
+    <title>לוי רמפ - בקרה והגדרות בלוטות'</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between font-sans">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans p-4">
 
     <!-- Header -->
-    <header class="bg-slate-800 border-b border-slate-700 py-3 px-4 flex justify-between items-center shadow-lg">
-        <div class="flex items-center gap-2">
-            <div class="bg-blue-600 p-2 rounded-xl text-white shadow">
+    <header class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex justify-between items-center shadow-lg">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-600 p-2.5 rounded-xl text-white shadow-md">
                 <i class="fa-solid fa-truck-ramp-box text-lg"></i>
             </div>
             <div>
-                <h1 class="text-base font-bold tracking-wide">Levi Ramp</h1>
-                <p id="truckNameDisplay" class="text-xs text-blue-400 font-semibold">משאית לא מוגדרת</p>
+                <h1 class="text-sm font-bold tracking-wide">לוי רמפ - בקרה</h1>
+                <p id="connStatusText" class="text-xs text-rose-400 font-semibold">לא מחובר</p>
             </div>
         </div>
-        <div class="flex items-center gap-2">
-            <button onclick="openWhatsAppOrder()" class="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow" title="הזמנת מוח בוואטסאפ">
-                <i class="fa-brands fa-whatsapp text-sm"></i> הזמן מוח
+        <div class="flex gap-2">
+            <button onclick="toggleSettings()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 p-2.5 rounded-xl shadow transition">
+                <i class="fa-solid fa-gear text-sm"></i>
             </button>
-            <button onclick="openSettings()" class="bg-slate-700 hover:bg-slate-600 p-2 rounded-xl text-slate-300 transition" title="הגדרות">
-                <i class="fa-solid fa-gear"></i>
+            <button onclick="connectBLE()" id="connectBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-3 rounded-xl shadow-lg transition active:scale-95">
+                התחבר
             </button>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-1 max-w-md w-full mx-auto p-4 flex flex-col gap-4 justify-center">
-        
-        <!-- Connection Status Card -->
-        <div class="bg-slate-800/90 border border-slate-700 rounded-2xl p-3.5 shadow-xl flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div id="connDot" class="w-3.5 h-3.5 rounded-full bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]"></div>
-                <div>
-                    <h2 class="text-xs font-bold text-slate-200">סטטוס בקר BLE</h2>
-                    <p id="connText" class="text-xs text-slate-400">לא מחובר</p>
+    <!-- Settings Modal / Panel -->
+    <div id="settingsPanel" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 max-w-md w-full shadow-2xl flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h2 class="text-sm font-bold text-blue-400 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders"></i> הגדרות מתקדמות למודולים
+                </h2>
+                <button onclick="toggleSettings()" class="text-slate-400 hover:text-white text-sm p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- BLE UUIDs -->
+            <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-300">שירות בלוטות' (Service UUID):</label>
+                <input type="text" id="serviceUuidInput" value="0000ffe0-0000-1000-8000-00805f9b34fb" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 font-mono">
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-300">מאפיין כתיבה (Characteristic UUID):</label>
+                <input type="text" id="charUuidInput" value="0000ffe1-0000-1000-8000-00805f9b34fb" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 font-mono">
+            </div>
+
+            <!-- Command Mode Selection -->
+            <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-300">סוג פרוטוקול פקודות לבקר:</label>
+                <select id="protocolMode" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200">
+                    <option value="hex_standard">ממסרים HEX סטנדרטי (A0 0x ...)</option>
+                    <option value="text_commands">פקודות טקסט פשוטות (OPEN, CLOSE...)</option>
+                    <option value="modbus_rtu">Modbus RTU / פקודות ערוצים בודדים</option>
+                </select>
+            </div>
+
+            <!-- Custom HEX / Text Overrides -->
+            <div class="bg-slate-950/50 p-3 rounded-2xl border border-slate-800 flex flex-col gap-2 text-xs">
+                <span class="font-bold text-slate-300">בדיקת ערוץ בודד ידנית:</span>
+                <div class="flex gap-2">
+                    <input type="text" id="customPayload" placeholder="למשל: A00101A2 או OPEN" class="bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 flex-1 text-slate-200 font-mono">
+                    <button onclick="sendCustomCommand()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-xl">שלח</button>
                 </div>
             </div>
-            <button onclick="connectBLE()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-3.5 rounded-xl shadow transition">
-                התחבר בלוטות'
+
+            <button onclick="toggleSettings()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-xs shadow-lg mt-2">
+                שמור וסגור
             </button>
         </div>
+    </div>
 
-        <!-- Joystick Section (Momentary & Interlocked) -->
-        <div class="bg-slate-800/90 border border-slate-700 rounded-2xl p-5 shadow-xl flex flex-col items-center">
-            <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">בקרת ג'ויסטיק מומנטרית (לחץ והחזק)</h2>
+    <!-- Main Controller -->
+    <main class="max-w-md w-full mx-auto flex flex-col gap-4 my-auto">
+        
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl flex flex-col items-center">
+            <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-6">לחץ והחזק להפעלת רמפה</h2>
             
-            <!-- Joystick Outer Ring -->
-            <div class="relative w-52 h-52 rounded-full bg-slate-900 border-4 border-slate-700 flex items-center justify-center shadow-inner select-none">
+            <div class="relative w-64 h-64 rounded-full bg-slate-950 border-4 border-slate-800 flex items-center justify-center shadow-inner select-none">
                 
                 <!-- Direction Labels -->
-                <div class="absolute top-2 text-xs font-bold text-slate-400 flex flex-col items-center">
-                    <i class="fa-solid fa-arrow-up text-blue-400 mb-0.5"></i>
+                <div class="absolute top-3 text-xs font-bold text-slate-300 flex flex-col items-center">
+                    <i class="fa-solid fa-chevron-up text-blue-400 mb-0.5"></i>
                     <span>הרמה (3+2)</span>
                 </div>
-                <div class="absolute bottom-2 text-xs font-bold text-slate-400 flex flex-col items-center">
+                <div class="absolute bottom-3 text-xs font-bold text-slate-300 flex flex-col items-center">
                     <span>הורדה (3+1)</span>
-                    <i class="fa-solid fa-arrow-down text-blue-400 mt-0.5"></i>
+                    <i class="fa-solid fa-chevron-down text-blue-400 mt-0.5"></i>
                 </div>
-                <div class="absolute right-2.5 text-xs font-bold text-slate-400 flex items-center gap-1">
+                <div class="absolute right-3 text-xs font-bold text-slate-300 flex items-center gap-1">
                     <span>פתיחה (1+4)</span>
-                    <i class="fa-solid fa-arrow-right text-emerald-400"></i>
+                    <i class="fa-solid fa-chevron-right text-emerald-400"></i>
                 </div>
-                <div class="absolute left-2.5 text-xs font-bold text-slate-400 flex items-center gap-1">
-                    <i class="fa-solid fa-arrow-left text-rose-400"></i>
+                <div class="absolute left-3 text-xs font-bold text-slate-300 flex items-center gap-1">
+                    <i class="fa-solid fa-chevron-left text-rose-400"></i>
                     <span>סגירה (2+4)</span>
                 </div>
 
-                <!-- Interactive Momentary Buttons -->
-                <button id="btnUp" class="absolute top-3.5 w-11 h-11 rounded-full bg-slate-800 hover:bg-blue-600 text-slate-300 hover:text-white flex items-center justify-center transition active:scale-95 shadow"><i class="fa-solid fa-chevron-up"></i></button>
-                <button id="btnDown" class="absolute bottom-3.5 w-11 h-11 rounded-full bg-slate-800 hover:bg-blue-600 text-slate-300 hover:text-white flex items-center justify-center transition active:scale-95 shadow"><i class="fa-solid fa-chevron-down"></i></button>
-                <button id="btnRight" class="absolute right-3.5 w-11 h-11 rounded-full bg-slate-800 hover:bg-emerald-600 text-slate-300 hover:text-white flex items-center justify-center transition active:scale-95 shadow"><i class="fa-solid fa-chevron-right"></i></button>
-                <button id="btnLeft" class="absolute left-3.5 w-11 h-11 rounded-full bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white flex items-center justify-center transition active:scale-95 shadow"><i class="fa-solid fa-chevron-left"></i></button>
+                <!-- Control Buttons -->
+                <button id="btnUp" class="absolute top-2 w-12 h-12 rounded-full bg-slate-800 hover:bg-blue-600 text-slate-200 flex items-center justify-center shadow-md transition active:scale-90"><i class="fa-solid fa-arrow-up"></i></button>
+                <button id="btnDown" class="absolute bottom-2 w-12 h-12 rounded-full bg-slate-800 hover:bg-blue-600 text-slate-200 flex items-center justify-center shadow-md transition active:scale-90"><i class="fa-solid fa-arrow-down"></i></button>
+                <button id="btnRight" class="absolute right-2 w-12 h-12 rounded-full bg-slate-800 hover:bg-emerald-600 text-slate-200 flex items-center justify-center shadow-md transition active:scale-90"><i class="fa-solid fa-arrow-right"></i></button>
+                <button id="btnLeft" class="absolute left-2 w-12 h-12 rounded-full bg-slate-800 hover:bg-rose-600 text-slate-200 flex items-center justify-center shadow-md transition active:scale-90"><i class="fa-solid fa-arrow-left"></i></button>
 
-                <!-- Center Knob -->
-                <div id="joystickKnob" class="w-16 h-16 rounded-full bg-gradient-to-tr from-slate-700 to-slate-600 border-2 border-slate-500 shadow-xl flex items-center justify-center transition-all duration-100 pointer-events-none">
-                    <div class="w-6 h-6 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center">
-                        <i class="fa-solid fa-gamepad text-blue-400 text-xs"></i>
-                    </div>
+                <!-- Center Indicator -->
+                <div id="knob" class="w-16 h-16 rounded-full bg-gradient-to-tr from-slate-800 to-slate-700 border border-slate-600 shadow-xl flex items-center justify-center transition-all duration-150 pointer-events-none">
+                    <i class="fa-solid fa-bolt text-blue-400 text-sm"></i>
                 </div>
 
             </div>
-            
-            <div id="actionFeedback" class="mt-4 text-center text-xs font-medium text-slate-400 h-6">
-                התחבר לבקר כדי להתחיל להפעיל
+
+            <div id="feedback" class="mt-4 text-center text-xs font-semibold text-slate-400 h-6">
+                אנא התחבר לבקר הבלוטות' תחילה
+            </div>
+        </div>
+
+        <!-- Live Debug Log Box -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 flex flex-col gap-1 shadow-inner">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">לוג מערכת ובדיקות:</span>
+            <div id="logBox" class="bg-slate-950 rounded-xl p-2 h-20 overflow-y-auto text-[10px] font-mono text-slate-300">
+                ממתין לפעולה...
             </div>
         </div>
 
     </main>
 
-    <!-- Footer Emergency Button -->
-    <footer class="p-3 bg-slate-800 border-t border-slate-700 text-center">
-        <button onclick="emergencyStop()" class="w-full max-w-md mx-auto bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 px-4 rounded-xl shadow transition flex items-center justify-center gap-2 text-sm">
+    <!-- Footer Emergency -->
+    <footer class="max-w-md w-full mx-auto">
+        <button onclick="emergencyStop()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 px-4 rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-sm active:scale-95">
             <i class="fa-solid fa-triangle-exclamation"></i>
-            עצור חירום / איפוס ממסרים (Stop)
+            עצור חירום / איפוס ממסרים
         </button>
     </footer>
-
-    <!-- Settings Modal -->
-    <div id="settingsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
-            <h3 class="text-base font-bold mb-3 text-slate-100"><i class="fa-solid fa-gear text-blue-400 ml-2"></i>הגדרות בקר ומשאית</h3>
-            
-            <label class="block text-xs text-slate-400 mb-1">שם משאית / רמפה:</label>
-            <input type="text" id="truckNameInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 text-xs mb-3 focus:outline-none focus:border-blue-500" placeholder="לדוגמה: משאית 101">
-            
-            <label class="block text-xs text-slate-400 mb-1">מזהה בקר מורשה (JDY-23):</label>
-            <input type="text" id="allowedDeviceInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 text-xs mb-5 focus:outline-none focus:border-blue-500" placeholder="JDY-23">
-
-            <div class="flex gap-2">
-                <button onclick="saveSettings()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-xl text-xs transition">שמור</button>
-                <button onclick="closeSettings()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-2 rounded-xl text-xs transition">ביטול</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Alert Modal -->
-    <div id="msgModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 max-w-xs w-full shadow-2xl text-center">
-            <h3 id="modalTitle" class="text-sm font-bold mb-2">הודעת מערכת</h3>
-            <p id="modalText" class="text-xs text-slate-300 mb-4">טקסט...</p>
-            <button onclick="closeModal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-xl text-xs transition">אישור</button>
-        </div>
-    </div>
 
     <script>
         let bluetoothDevice = null;
         let bleCharacteristic = null;
         let isConnected = false;
-        let activeDirection = null;
 
-        // Settings load
-        let truckName = localStorage.getItem('levi_truck_name') || 'משאית לא מוגדרת';
-        let allowedDevice = localStorage.getItem('levi_allowed_device') || 'JDY-23';
-        
-        document.getElementById('truckNameDisplay').textContent = truckName;
-        document.getElementById('truckNameInput').value = truckName !== 'משאית לא מוגדרת' ? truckName : '';
-        document.getElementById('allowedDeviceInput').value = allowedDevice;
-
-        function openSettings() {
-            document.getElementById('settingsModal').classList.remove('hidden');
-            document.getElementById('settingsModal').classList.add('flex');
+        function logMsg(msg) {
+            const box = document.getElementById('logBox');
+            box.innerHTML += `<div>> ${msg}</div>`;
+            box.scrollTop = box.scrollHeight;
         }
 
-        function closeSettings() {
-            document.getElementById('settingsModal').classList.remove('hidden');
-            document.getElementById('settingsModal').classList.add('hidden');
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.classList.toggle('hidden');
         }
 
-        function saveSettings() {
-            const name = document.getElementById('truckNameInput').value.trim();
-            const dev = document.getElementById('allowedDeviceInput').value.trim();
-            if(name) {
-                truckName = name;
-                localStorage.setItem('levi_truck_name', truckName);
-                document.getElementById('truckNameDisplay').textContent = truckName;
-            }
-            if(dev) {
-                allowedDevice = dev;
-                localStorage.setItem('levi_allowed_device', allowedDevice);
-            }
-            closeSettings();
-            showAlert("הצלחה", "ההגדרות נשמרו בהצלחה.");
-        }
-
-        function openWhatsAppOrder() {
-            const phone = "972523401960";
-            const message = encodeURIComponent(`שלום אריק, אני מעוניין להזמין מוח/בקר נוסף עבור מערכת ה-Levi Ramp של ${truckName}.`);
-            window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
-        }
-
-        // BLE Connection
         async function connectBLE() {
             try {
                 if (!navigator.bluetooth) {
-                    showAlert("שגיאה", "הדפדפן אינו תומך ב-Bluetooth Low Energy.");
+                    alert("הדפדפן אינו תומך ב-Bluetooth. יש לפתוח דרך Google Chrome.");
                     return;
                 }
-                document.getElementById('connText').textContent = "מחפש בקר...";
                 
+                const serviceUuid = document.getElementById('serviceUuidInput').value.trim();
+                const charUuid = document.getElementById('charUuidInput').value.trim();
+
+                document.getElementById('connStatusText').textContent = "מחפש בקר...";
+                logMsg(`מחפש בקר עם שירות: ${serviceUuid}`);
+
                 const device = await navigator.bluetooth.requestDevice({
                     acceptAllDevices: true,
-                    optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb']
+                    optionalServices: [serviceUuid]
                 });
 
-                if (allowedDevice && device.name && !device.name.includes(allowedDevice) && !allowedDevice.includes(device.name)) {
-                    showAlert("שגיאת אבטחה", `הבקר שזוהה (${device.name}) אינו תואם לבקר המורשה (${allowedDevice}).`);
-                    document.getElementById('connText').textContent = "חיבור נדחה";
-                    return;
-                }
-
                 bluetoothDevice = device;
+                logMsg(`נמצא בקר: ${device.name || 'Unknown'}. מתחבר ל-GATT...`);
+                
                 const server = await device.gatt.connect();
-                const service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
-                bleCharacteristic = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
+                const service = await server.getPrimaryService(serviceUuid);
+                bleCharacteristic = await service.getCharacteristic(charUuid);
 
-                document.getElementById('connText').textContent = `מחובר: ${device.name}`;
-                document.getElementById('connDot').className = "w-3.5 h-3.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]";
                 isConnected = true;
-                document.getElementById('actionFeedback').textContent = "מערכת מוכנה להפעלה מומנטרית";
-
+                document.getElementById('connStatusText').textContent = `מחובר: ${device.name || 'JDY-23'}`;
+                document.getElementById('connStatusText').className = "text-xs text-emerald-400 font-semibold";
+                document.getElementById('connectBtn').textContent = "מחובר";
+                document.getElementById('connectBtn').className = "bg-emerald-600 text-white text-xs font-bold py-2.5 px-3 rounded-xl shadow-lg transition";
+                document.getElementById('feedback').textContent = "המחובר בהצלחה! בחר פקודה.";
+                logMsg("התחברות לבלוטות' בוצעה בהצלחה מלאה!");
             } catch (error) {
-                console.log('BLE Error:', error);
-                document.getElementById('connText').textContent = "החיבור נכשל";
+                console.error(error);
+                document.getElementById('connStatusText').textContent = "החיבור נכשל";
+                logMsg(`שגיאת חיבור: ${error.message}`);
             }
         }
 
-        // Send Command to BLE (Anti-stuck protection & exact relay mapping)
-        async function sendCommand(commandHex) {
-            if (!isConnected || !bleCharacteristic) return;
-            try {
-                // Send command bytes to JDY-23
-                const encoder = new TextEncoder();
-                // If using string or HEX bytes depending on your firmware:
-                await bleCharacteristic.writeValue(typeof commandHex === 'string' ? encoder.encode(commandHex) : commandHex);
-            } catch (err) {
-                console.error("Command send error:", err);
-            }
-        }
-
-        // Momentary Joystick Logic
-        const knob = document.getElementById('joystickKnob');
-        const feedback = document.getElementById('actionFeedback');
-
-        function startAction(direction, name, translateStyle, hexCmd) {
-            if (!isConnected) {
-                showAlert("נדרש חיבור", "חבר את בלוטות' הבקר לפני ההפעלה.");
+        async function sendData(payload, isHex = true) {
+            if (!isConnected || !bleCharacteristic) {
+                alert("הבקר אינו מחובר בבלוטות'!");
+                logMsg("שגיאה: ניסיון שליחה בזמן שאין חיבור פעיל.");
                 return;
             }
-            if (activeDirection === direction) return; // Prevent spamming same command
-
-            activeDirection = direction;
-            knob.style.transform = translateStyle;
-            feedback.textContent = `מפעיל: ${name}...`;
-            feedback.className = "mt-4 text-center text-xs font-bold text-blue-400 h-6";
-
-            // Send activation command (Relay mapping)
-            sendCommand(hexCmd);
+            try {
+                let dataToSend;
+                if (isHex) {
+                    dataToSend = new Uint8Array(payload);
+                    logMsg(`שולח HEX: [${payload.map(b => '0x' + b.toString(16).toUpperCase()).join(', ')}]`);
+                } else {
+                    dataToSend = new TextEncoder().encode(payload);
+                    logMsg(`שולח טקסט: ${payload.trim()}`);
+                }
+                await bleCharacteristic.writeValue(dataToSend);
+                logMsg("הפקודה נשלחה בהצלחה לבקר!");
+            } catch (err) {
+                logMsg(`שגיאה בשליחת נתונים: ${err.message}`);
+                console.error(err);
+            }
         }
 
-        function stopAction() {
-            if (!activeDirection) return;
-            activeDirection = null;
+        const knob = document.getElementById('knob');
+        const feedback = document.getElementById('feedback');
+        let activeDir = null;
+
+        function getPayloadsForAction(dir) {
+            const mode = document.getElementById('protocolMode').value;
+            
+            // פקודות שונות לפי הפרוטוקול שתבחר בהגדרות
+            if (mode === 'text_commands') {
+                const map = { 'OPEN': "OPEN\n", 'CLOSE': "CLOSE\n", 'UP': "UP\n", 'DOWN': "DOWN\n" };
+                return { data: map[dir], hex: false };
+            } else if (mode === 'modbus_rtu') {
+                // דוגמה למודבוס נפוץ להפעלת ממסר בודד
+                const map = { 
+                    'OPEN': [0x01, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8C, 0x3A], 
+                    'CLOSE': [0x01, 0x05, 0x00, 0x01, 0xFF, 0x00, 0xDD, 0xFA],
+                    'UP': [0x01, 0x05, 0x00, 0x02, 0xFF, 0x00, 0x2D, 0xFA],
+                    'DOWN': [0x01, 0x05, 0x00, 0x03, 0xFF, 0x00, 0x7C, 0x3A]
+                };
+                return { data: map[dir], hex: true };
+            } else {
+                // HEX סטנדרטי (ברירת מחדל ללוחות רבים)
+                const map = {
+                    'OPEN': [0xA0, 0x01, 0x01, 0xA2],   // ממסר 1 דולק
+                    'CLOSE': [0xA0, 0x02, 0x01, 0xA3],  // ממסר 2 דולק
+                    'UP': [0xA0, 0x03, 0x01, 0xA4],     // ממסר 3 דולק
+                    'DOWN': [0xA0, 0x04, 0x01, 0xA5]    // ממסר 4 דולק
+                };
+                return { data: map[dir], hex: true };
+            }
+        }
+
+        function triggerAction(dirName, dirKey, transformStyle) {
+            if (!isConnected) { alert("חבר בלוטות' תחילה!"); return; }
+            activeDir = dirName;
+            knob.style.transform = transformStyle;
+            feedback.textContent = `מפעיל: ${dirName}`;
+            feedback.className = "mt-4 text-center text-xs font-bold text-blue-400 h-6";
+
+            const payloadObj = getPayloadsForAction(dirKey);
+            sendData(payloadObj.data, payloadObj.hex);
+        }
+
+        function releaseAction() {
+            if (!activeDir) return;
+            activeDir = null;
             knob.style.transform = 'translate(0px, 0px)';
-            feedback.textContent = `עצירה (ממסרים מנותקים)`;
+            feedback.textContent = "עצירה / כיבוי ממסרים";
             feedback.className = "mt-4 text-center text-xs font-bold text-amber-400 h-6";
 
-            // Send STOP command (all relays off / 0xA0 0x01 0x00 type or similar zero state)
-            sendCommand("STOP\n"); 
+            const mode = document.getElementById('protocolMode').value;
+            if (mode === 'text_commands') {
+                sendData("STOP\n", false);
+            } else if (mode === 'modbus_rtu') {
+                // כיבוי כללי למודבוס
+                sendData([0x01, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCD, 0xCA], true);
+            } else {
+                // כיבוי גורף HEX סטנדרטי
+                sendData([0xA0, 0x00, 0x00, 0xA0], true);
+            }
         }
 
         function emergencyStop() {
-            activeDirection = null;
+            activeDir = null;
             knob.style.transform = 'translate(0px, 0px)';
-            feedback.textContent = "הופעלה עצירת חירום!";
+            feedback.textContent = "בוצעה עצירת חירום!";
             feedback.className = "mt-4 text-center text-xs font-bold text-rose-500 h-6";
-            sendCommand("STOP\n");
-            showAlert("עצירת חירום", "כל הממסרים אופסו ונותקו באופן מיידי.");
+            sendData([0xA0, 0x00, 0x00, 0xA0], true);
         }
 
-        function bindButton(btnId, direction, name, translate, hexCmd) {
-            const btn = document.getElementById(btnId);
+        function sendCustomCommand() {
+            const val = document.getElementById('customPayload').value.trim();
+            if (!val) return;
+            // נסיון שליחה כטקסט או כהקסאדצימלי לפי בחירה
+            sendData(val + "\n", false);
+        }
+
+        function bindTouch(btnId, name, key, transform) {
+            const el = document.getElementById(btnId);
+            if (!el) return;
+            el.addEventListener('mousedown', () => triggerAction(name, key, transform));
+            el.addEventListener('mouseup', releaseAction);
+            el.addEventListener('mouseleave', releaseAction);
             
-            // Mouse
-            btn.addEventListener('mousedown', () => startAction(direction, name, translate, hexCmd));
-            btn.addEventListener('mouseup', stopAction);
-            btn.addEventListener('mouseleave', stopAction);
-            
-            // Touch (Mobile)
-            btn.addEventListener('touchstart', (e) => { e.preventDefault(); startAction(direction, name, translate, hexCmd); });
-            btn.addEventListener('touchend', (e) => { e.preventDefault(); stopAction(); });
+            el.addEventListener('touchstart', (e) => { e.preventDefault(); triggerAction(name, key, transform); });
+            el.addEventListener('touchend', (e) => { e.preventDefault(); releaseAction(); });
         }
 
-        // Bind 4 directions with exact mappings:
-        // Right: Open (1+4)
-        // Left: Close (2+4)
-        // Up: Lift (3+2)
-        // Down: Lower (3+1)
-        bindButton('btnRight', 'right', 'פתיחה (1+4)', 'translateX(12px)', 'OPEN\n');
-        bindButton('btnLeft', 'left', 'סגירה (2+4)', 'translateX(-12px)', 'CLOSE\n');
-        bindButton('btnUp', 'up', 'הרמה (3+2)', 'translateY(-12px)', 'UP\n');
-        bindButton('btnDown', 'down', 'הורדה (3+1)', 'translateY(12px)', 'DOWN\n');
-
-        function showAlert(title, text) {
-            document.getElementById('modalTitle').textContent = title;
-            document.getElementById('modalText').textContent = text;
-            document.getElementById('msgModal').classList.remove('hidden');
-            document.getElementById('msgModal').classList.add('flex');
-        }
-
-        function closeModal() {
-            document.getElementById('msgModal').classList.remove('flex');
-            document.getElementById('msgModal').classList.add('hidden');
-        }
+        bindTouch('btnRight', 'פתיחה (1+4)', 'OPEN', 'translateX(12px)');
+        bindTouch('btnLeft', 'סגירה (2+4)', 'CLOSE', 'translateX(-12px)');
+        bindTouch('btnUp', 'הרמה (3+2)', 'UP', 'translateY(-12px)');
+        bindTouch('btnDown', 'הורדה (3+1)', 'DOWN', 'translateY(12px)');
     </script>
 </body>
 </html>
+
+
+
 
