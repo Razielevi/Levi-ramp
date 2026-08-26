@@ -2,411 +2,151 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LEVI RAMP</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="icon-192.png">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Levi Ramp Control</title>
     <style>
-        :root {
-            --primary: #c62828;
-            --primary-dark: #8e0000;
-            --bg: #121212;
-            --card-bg: #1e1e1e;
-            --text: #ffffff;
-            --text-secondary: #b0b0b0;
-            --accent: #ff9800;
-            --success: #2e7d32;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent; /* מניעת סימון כחול בלחיצה */
-        }
-
         body {
-            background-color: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            padding: 15px;
-            overflow: hidden;
-        }
-
-        header {
-            width: 100%;
-            max-width: 450px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #333;
-            margin-bottom: 5px;
-        }
-
-        .logo-container {
-            display: flex;
-            align-items: center;
-        }
-
-        .logo-container img {
-            height: 40px;
-            object-fit: contain;
-        }
-
-        .status-badge {
-            background: #333;
-            color: var(--text-secondary);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-            border: 1px solid #444;
-        }
-
-        .status-badge.connected {
-            background: rgba(46, 125, 50, 0.2);
-            color: #81c784;
-            border-color: var(--success);
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background-color: var(--text-secondary);
-            border-radius: 50%;
-        }
-
-        .connected .status-dot {
-            background-color: var(--success);
-            box-shadow: 0 0 8px var(--success);
-        }
-
-        main {
-            width: 100%;
-            max-width: 450px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            flex: 1;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* --- עיצוב הג'ויסטיק העגול החדש (משולב ומלא) --- */
-        .joystick-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            padding: 15px 0;
-        }
-
-        .joystick-container {
-            position: relative;
-            width: 280px; /* גודל העיגול */
-            height: 280px;
-            background: #2a2a2a;
-            border-radius: 50%;
-            display: grid;
-            grid-template-areas: 
-                ". up ."
-                "left center right"
-                ". down .";
-            padding: 10px;
-            box-shadow: 0 0 25px rgba(0,0,0,0.6), inset 0 0 15px rgba(0,0,0,0.3);
-            border: 2px solid #333;
-        }
-
-        .joy-btn {
-            background: #333;
-            border: 2px solid #444;
-            color: white;
-            border-radius: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.1s ease;
-            font-size: 1rem;
-        }
-
-        .joy-btn span {
-            font-size: 1.8rem;
-            margin-bottom: 5px;
-        }
-
-        /* אפקט לחיצה - אדום */
-        .joy-btn:active {
-            background: var(--primary);
-            border-color: white;
-            transform: scale(0.97);
-            box-shadow: 0 0 15px var(--primary);
-        }
-
-        .up-btn { grid-area: up; border-radius: 15px 15px 5px 5px; }
-        .down-btn { grid-area: down; border-radius: 5px 5px 15px 15px; }
-        .left-btn { grid-area: left; border-radius: 15px 5px 5px 15px; }
-        .right-btn { grid-area: right; border-radius: 5px 15px 15px 5px; }
-
-        /* מרכז העיגול - ריק עם מיתוג קטן */
-        .center-circle {
-            grid-area: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #222;
-            border-radius: 50%;
-            margin: -5px; /* חיבור בין הכפתורים */
-            pointer-events: none;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
-        }
-        
-        .center-circle::after {
-            content: 'LEVI';
-            color: #444;
-            font-weight: bold;
-            font-size: 0.8rem;
-        }
-
-        /* Truck Image Banner */
-        .truck-banner {
-            width: 100%;
-            background: var(--card-bg);
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid #333;
-            height: 90px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 5px;
-        }
-
-        .truck-banner img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* Bottom Bar / Actions */
-        .bottom-actions {
-            width: 100%;
-            max-width: 450px;
-            display: flex;
-            gap: 10px;
-            margin-top: 5px;
-        }
-
-        .action-btn {
-            flex: 1;
-            background: var(--card-bg);
-            border: 1px solid #333;
-            color: white;
-            padding: 10px;
-            border-radius: 12px;
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: 0.2s;
-        }
-
-        .action-btn:hover {
-            background: #2a2a2a;
-            border-color: #555;
-        }
-
-        .whatsapp-btn {
-            background: rgba(37, 211, 102, 0.15);
-            border-color: #25d366;
-            color: #25d366;
-        }
-
-        /* Settings Modal */
-        #settings-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            text-align: center;
+            margin: 0;
             padding: 20px;
         }
-
-        .modal-content {
-            background: var(--card-bg);
-            width: 100%;
-            max-width: 400px;
-            border-radius: 20px;
-            padding: 25px;
-            border: 1px solid #444;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 10px;
-        }
-
-        .close-modal {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-
-        .setting-group {
-            margin-bottom: 15px;
-        }
-
-        .setting-group label {
-            display: block;
+        h1 {
+            color: #ffc107;
             margin-bottom: 5px;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
         }
-
-        .setting-group select, .setting-group input {
-            width: 100%;
-            padding: 10px;
-            background: #2a2a2a;
-            border: 1px solid #444;
+        .status {
+            font-size: 14px;
+            margin-bottom: 20px;
+            color: #aaa;
+        }
+        .btn-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            max-width: 350px;
+            margin: 0 auto;
+        }
+        button {
+            padding: 20px;
+            font-size: 18px;
+            font-weight: bold;
             color: white;
-            border-radius: 8px;
-            font-size: 1rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.1s, background-color 0.1s;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        button:active {
+            transform: scale(0.96);
+        }
+        /* עיצוב כפתורים */
+        #btnOpen { background-color: #d32f2f; }
+        #btnClose { background-color: #c2185b; }
+        #btnLift { background-color: #388e3c; }
+        #btnLower { background-color: #f57c00; }
+        
+        #connectBtn {
+            background-color: #1976d2;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 350px;
+        }
+        .contact-info {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #777;
         }
     </style>
 </head>
 <body>
 
-    <!-- הכותרת הראשית -->
-    <header>
-        <div class="logo-container">
-            <img src="icon-192.png" alt="LEVI RAMP" onerror="this.style.display='none'">
-            <span style="font-weight: bold; font-size: 1.2rem; color: white; margin-right: 10px;">LEVI RAMP</span>
-        </div>
-        <div id="bt-status" class="status-badge" onclick="toggleBluetooth()">
-            <div class="status-dot"></div>
-            <span id="bt-status-text">התחבר בלוטוס</span>
-        </div>
-    </header>
+    <h1>Levi Ramp</h1>
+    <div class="status" id="connectionStatus">מצב: מנותק מ-Bluetooth</div>
 
-    <!-- תוכן מרכזי - ג'ויסטיק הפעלה ותמונה -->
-    <main>
-        <!-- באנר תמונת משאית -->
-        <div class="truck-banner">
-            <img src="truck.jpg" alt="Truck Ramp" onerror="this.src='https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80'">
-        </div>
+    <button id="connectBtn" onclick="toggleConnection()">התחבר להתקן Bluetooth</button>
 
-        <!-- הג'ויסטיק העגול והתקין (ללא תקיעות, הלוגיקה של 1+4 וכו') -->
-        <div class="joystick-wrapper">
-            <div class="joystick-container">
-                <!-- הרמה (3+2) -->
-                <button class="joy-btn up-btn" onpointerdown="startAction('up')" onpointerup="stopAction()" onpointercancel="stopAction()">
-                    <span>🔼</span> הרמה
-                </button>
-                <!-- סגירה (2+4) -->
-                <button class="joy-btn left-btn" onpointerdown="startAction('close')" onpointerup="stopAction()" onpointercancel="stopAction()">
-                    <span>⬅️</span> סגירה
-                </button>
-                <!-- מרכז -->
-                <div class="center-circle"></div>
-                <!-- פתיחה (1+4) -->
-                <button class="joy-btn right-btn" onpointerdown="startAction('open')" onpointerup="stopAction()" onpointercancel="stopAction()">
-                    <span>➡️</span> פתיחה
-                </button>
-                <!-- הנמכה (3+1) -->
-                <button class="joy-btn down-btn" onpointerdown="startAction('down')" onpointerup="stopAction()" onpointercancel="stopAction()">
-                    <span>🔽</span> הנמכה
-                </button>
-            </div>
-        </div>
-    </main>
-
-    <!-- כפתורים תחתונים (הגדרות וקשר) -->
-    <div class="bottom-actions">
-        <button class="action-btn" onclick="openSettings()">
-            ⚙️ <span id="txt-settings-btn">הגדרות</span>
-        </button>
-        <a class="action-btn whatsapp-btn" href="https://wa.me/972556707209?text=שלום, פונה בקשר לאפליקציית LEVI RAMP" target="_blank">
-            💬 055-6707209
-        </a>
+    <div class="btn-container">
+        <button id="btnOpen">🔒 1. פתיחה (ממסר 1 + 4)</button>
+        <button id="btnClose">🔒 2. סגירה (ממסר 2 + 4)</button>
+        <button id="btnLift">🔼 3. הרמה (ממסר 3 + 2)</button>
+        <button id="btnLower">🔽 4. הורדה (ממסר 3 + 1)</button>
     </div>
 
-    <!-- חלון הגדרות (Settings Modal) -->
-    <div id="settings-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="txt-settings-title">הגדרות מתקדמות</h3>
-                <button class="close-modal" onclick="closeSettings()">&times;</button>
-            </div>
-            
-            <div class="setting-group">
-                <label id="txt-lang-label">שפה / Language</label>
-                <select id="lang-select" onchange="changeLanguage(this.value)">
-                    <option value="he">עברית</option>
-                    <option value="en">English</option>
-                    <option value="ru">Русский</option>
-                </select>
-            </div>
-
-            <div class="setting-group">
-                <label id="txt-mode-label">פורמט פקודה</label>
-                <select id="mode-select">
-                    <option value="hex">HEX (ברירת מחדל)</option>
-                    <option value="text">טקסט פשוט</option>
-                </select>
-            </div>
-
-            <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4; margin-top: 15px;" id="txt-logic-info">
-                לוגיקת ממסרים:<br>
-                פתיחה = 1+4 · סגירה = 2+4<br>
-                הרמה = 3+2 · הנמכה = 3+1
-            </p>
-
-            <div style="margin-top: 20px; text-align: center; color: #666; font-size: 0.75rem;">
-                LEVI RAMP v5.0 — Arik Levi
-            </div>
-        </div>
+    <div class="contact-info">
+        להזמנות ושירות: אריק לוי
     </div>
 
     <script>
-        // ניהול חיבור Bluetooth והפקודות המדויקות
-        let bluetoothDevice = null;
-        let bluetoothServer = null;
-        let controlCharacteristic = null;
+        let bluetoothDevice;
+        let bluetoothCharacteristic;
 
-        // ה-UUIDs של המודול שלך
-        const SERVICE_UUID = "0000ffe0-0000-1000-8000-00805f9b34fb";
-        const CHARACTERISTIC
+        const COMMANDS = {
+            open: "RELAY_1_4_ON",
+            close: "RELAY_2_4_ON",
+            lift: "RELAY_3_2_ON",
+            lower: "RELAY_3_1_ON",
+            stop: "ALL_RELAYS_OFF"
+        };
 
+        async function toggleConnection() {
+            if (!bluetoothDevice || !bluetoothDevice.gatt.connected) {
+                try {
+                    bluetoothDevice = await navigator.bluetooth.requestDevice({
+                        acceptAllDevices: true,
+                        optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb']
+                    });
+                    
+                    const server = await bluetoothDevice.gatt.connect();
+                    const service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
+                    bluetoothCharacteristic = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
+                    
+                    document.getElementById('connectionStatus').innerText = "מצב: מחובר בהצלחה ✅";
+                    document.getElementById('connectBtn').innerText = "התנתק";
+                } catch (error) {
+                    console.error("שגיאת התחברות:", error);
+                    alert("ההתחברות נכשלה או בוטלה.");
+                }
+            } else {
+                if (bluetoothDevice.gatt.connected) {
+                    await bluetoothDevice.gatt.disconnect();
+                }
+                document.getElementById('connectionStatus').innerText = "מצב: מנותק מ-Bluetooth";
+                document.getElementById('connectBtn').innerText = "התחבר להתקן Bluetooth";
+            }
+        }
 
+        async function sendCommand(cmd) {
+            if (!bluetoothCharacteristic) return;
+            try {
+                const encoder = new TextEncoder();
+                await bluetoothCharacteristic.writeValue(encoder.encode(cmd));
+            } catch (error) {
+                console.error("שגיאה בשליחת נתונים:", error);
+            }
+        }
 
+        function setupHoldButton(buttonId, pressCmd) {
+            const btn = document.getElementById(buttonId);
+            const startAction = (e) => { e.preventDefault(); sendCommand(pressCmd); };
+            const endAction = (e) => { e.preventDefault(); sendCommand(COMMANDS.stop); };
 
+            btn.addEventListener('pointerdown', startAction);
+            btn.addEventListener('pointerup', endAction);
+            btn.addEventListener('pointerleave', endAction);
+            btn.addEventListener('touchend', endAction);
+            btn.addEventListener('touchcancel', endAction);
+        }
+
+        setupHoldButton('btnOpen', COMMANDS.open);
+        setupHoldButton('btnClose', COMMANDS.close);
+        setupHoldButton('btnLift', COMMANDS.lift);
+        setupHoldButton('btnLower', COMMANDS.lower);
+    </script>
+</body>
+</html>
